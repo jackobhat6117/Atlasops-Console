@@ -1,8 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.tsx'
-import { ApiUnavailable } from './app/ApiUnavailable.tsx'
+import { ApiUnavailable } from './app/ApiUnavailable'
+import { App } from './app/App'
 
 // The mock API runs in every environment, including the deployed demo,
 // because there is no real backend. It must be ready before the first request.
