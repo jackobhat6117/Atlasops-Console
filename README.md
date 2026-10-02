@@ -6,7 +6,7 @@ A frontend for operations teams to monitor, investigate and manage service incid
 
 - **Live demo:** _TBD_
 - **Repository:** _TBD_
-- **Mock API reference:** _TBD (`docs/API.md`)_
+- **Mock API reference:** [docs/API.md](docs/API.md)
 
 ---
 
@@ -51,8 +51,12 @@ npm install
 # run development server (http://localhost:5173)
 npm run dev
 
-# run tests
+# run tests (once / watch mode)
 npm test
+npm run test:watch
+
+# type-check
+npm run typecheck
 
 # run production build
 npm run build
@@ -67,17 +71,13 @@ No secrets are needed. The app runs entirely against the in-browser mock API.
 
 | Variable | Default | Description |
 |---|---|---|
-| _none yet_ | | Variables are documented here as they are added. |
+| `VITE_MOCK_FAILURE_RATE` | `0.05` | Probability (0–1) that a mock API request fails with a 500. Set to `0` for a failure-free demo. |
 
-### Mock API dev controls (development only)
+Copy a variable into `.env.local` to override it locally. `.env*` files are gitignored.
 
-You can force mock API behavior with request headers:
+### Mock API
 
-| Header | Example | Effect |
-|---|---|---|
-| `X-Mock-Failure` | `500` | Respond with the given error status |
-| `X-Mock-Delay` | `3000` | Override latency in milliseconds |
-| `X-Mock-Conflict` | `true` | Force a `409` on status updates |
+There is no backend to run. The API is served by Mock Service Worker inside the browser, using 1,043 seeded incidents, 200–1,200 ms latency and occasional random failures. In development you can force failures, delays and conflicts with `X-Mock-*` request headers. See [docs/API.md](docs/API.md) for the full reference.
 
 ---
 
@@ -170,13 +170,14 @@ _TBD_
 
 ## 8. Incomplete Work
 
-- [ ] Mock API (MSW handlers, seeded data)
+- [x] Mock API (MSW handlers, seeded data, contract tests)
 - [ ] Incident list
 - [ ] Incident details
 - [ ] Create incident
 - [ ] Automated tests
 - [ ] Deployment
-- [ ] API reference (`docs/API.md`)
+- [ ] Real-time updates (`GET /api/incidents/events`): optional, not implemented
+- [x] API reference (`docs/API.md`)
 
 **Known bugs:** _none recorded yet._
 **Shortcuts:** _TBD_
