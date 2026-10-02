@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/vitest'
+import { resetViewport } from './browser-polyfills'
 import { cleanup } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest'
 import { configureMock, resetMockConfig } from '../mocks/config'
@@ -13,6 +14,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 beforeEach(() => {
   resetDb()
   useToastStore.getState().clear()
+  resetViewport()
   resetMockConfig()
   configureMock({ minDelayMs: 0, maxDelayMs: 0, failureRate: 0, devControls: true })
 })

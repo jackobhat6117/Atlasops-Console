@@ -58,7 +58,7 @@ export function useIncidentListParams() {
         update({ [key]: values } as Partial<IncidentListParams>),
 
       /** Remove one value from a filter, or the whole filter when no value is given. */
-      clearFilter: <K extends FilterKey>(key: K, value?: FilterValue<K>) =>
+      clearFilter: (key: FilterKey, value?: string) =>
         update((current) => {
           const values = current[key] as string[]
           const next = value === undefined ? [] : values.filter((v) => v !== value)
@@ -69,7 +69,8 @@ export function useIncidentListParams() {
 
       setSort: (sort: SortField, order: SortOrder) => update({ sort, order }),
 
-      setPage: (page: number) => update({ page }),
+      /** `replace` is for corrections (e.g. clamping a page past the end) that shouldn't add history. */
+      setPage: (page: number, options?: { replace?: boolean }) => update({ page }, options),
 
       setPageSize: (pageSize: number) => update({ pageSize }),
     }),
