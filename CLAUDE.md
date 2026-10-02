@@ -8,7 +8,7 @@ AtlasOps Incident Management Console: a senior React take-home (72-hour deadline
 
 The authoritative spec is the assignment brief in `docs/` (`README.md`, `REQUIREMENTS.md`, `MOCK_API.md`, `SUBMISSION.md`). These files are **gitignored on purpose** (they're the company's text and are kept local only), so don't commit them or link to them from published files. Check `REQUIREMENTS.md` before building any feature. It has exact validation limits, required states and acceptance criteria.
 
-Built so far: the mock API (`src/mocks/`, documented in `docs/API.md`), the data layer, the design system (`shared/ui`), routing, and the **Incident List page**. The detail and create pages are placeholders. Update this file when the structure changes.
+Built so far: the mock API (`src/mocks/`, documented in `docs/API.md`), the data layer, the design system (`shared/ui`), routing, and all three required screens: Incident List, Incident Detail and Create Incident. Remaining: deployment, CI, and the README's Performance and Incomplete Work sections. Update this file when the structure changes.
 
 ## Commands
 
@@ -36,11 +36,12 @@ Stack: React 19, TypeScript, TanStack Query (server state), Zustand (shared clie
 src/
   app/        App (QueryProvider + RouterProvider), router.tsx (lazy routes, error boundary),
               layouts/RootLayout (skip link, header, Toaster, ScrollRestoration), ui/ (error, fallback screens)
-  pages/      incidents-list, incident-detail (placeholder), create-incident (placeholder), not-found
-  widgets/    incident-list (table on ≥768px / cards on phones, sortable headers, arrow-key rows)
+  pages/      incidents-list, incident-detail (+ IncidentProperties sidebar), create-incident, not-found
+  widgets/    incident-list (table on ≥768px / cards on phones, sortable headers, arrow-key rows),
+              incident-notes (NoteList timeline + AddNoteForm)
   features/   one slice per user action:
-              filter-incidents (URL state hook), change-incident-status (optimistic),
-              assign-incident, add-incident-note, create-incident
+              filter-incidents (URL state hook + toolbar UI), change-incident-status (StatusControl, optimistic),
+              assign-incident (AssigneeSelect), add-incident-note (AddNoteForm), create-incident (CreateIncidentForm)
   entities/   incident (schemas, list params, status rules, API, query keys, queries, cache helpers),
               user, service
   shared/     api (request, ApiError, createQueryClient), config (env, `paths` route registry),
@@ -79,6 +80,9 @@ src/
 - Layouts that differ structurally use `useMediaQuery(DESKTOP_QUERY)` and mount only one variant, instead of CSS-hiding duplicate content.
 - Every page calls `useDocumentTitle`. Every async view handles pending, error-without-data (retry), error-with-stale-data (Banner), and empty/no-results states.
 - Toast live regions are plain `aria-live` containers, not `role="alert"`, so a page's real alert stays queryable.
+- Forms: use RHF + `zodResolver`, lay fields out with `Field`, wire controls with `fieldAria(id, { error, hint })`, use `useWatch` (not `watch()`, which the compiler lint rejects), and show an `ErrorSummary` keyed by `submitCount`. Map server `400` `fieldErrors` with `setError`.
+- `ConfirmDialog` restores focus to whatever was focused when it opened, because Radix only restores focus to a `Dialog.Trigger`. Use `useUnsavedChangesGuard(isDirty)` together with it, and call `allowNextNavigation()` before redirecting after a save.
+- A control that disappears after it's clicked (e.g. status transition buttons) must move focus somewhere meaningful.
 
 ### Testing helpers
 

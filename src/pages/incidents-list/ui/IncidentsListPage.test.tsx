@@ -138,9 +138,10 @@ describe('Incident list page', () => {
     const table = await findTable()
     const link = within(getDataRows(table)[3]).getByRole('link')
     const id = link.getAttribute('href')!.split('/').pop()!
+    const title = link.textContent!
 
     await user.click(link)
-    expect(await screen.findByRole('heading', { level: 1, name: id })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: title })).toBeInTheDocument()
 
     await user.click(screen.getByRole('link', { name: 'Back to incidents' }))
 

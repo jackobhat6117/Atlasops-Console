@@ -142,7 +142,18 @@ _TBD_
 - `features/filter-incidents` exposes `useIncidentListParams()`. Changing search, a filter or the sort resets to page 1. Typing a search replaces the history entry instead of pushing a new one.
 
 ### Form architecture
-_TBD_
+
+Forms use React Hook Form with `zodResolver`, so the Zod schemas that validate the API also validate the forms.
+
+- **Create incident** (`features/create-incident`):
+  - Validates on submit, then again on every change.
+  - Shows errors next to each field (`aria-invalid` + `aria-describedby`) and in an error summary whose entries focus their field. Focus moves to the first invalid field.
+  - Server `400` field errors are mapped onto the same fields. Other failures show an alert, and the entered data is always kept.
+  - Double submission is blocked: the button shows a busy state and the submit handler ignores calls while a request is in flight.
+  - Leaving with unsaved input opens a confirmation dialog (React Router `useBlocker`, plus `beforeunload` for tab close). On success it redirects to the new incident, replacing the form's history entry.
+- **Add note** (`features/add-incident-note`):
+  - Trims the text and rejects empty or whitespace-only notes on the client; the server rejects them too.
+  - Clears the text only after the server confirms, so a failed submission keeps what you typed. Ctrl/⌘+Enter submits.
 
 ### Error handling
 
@@ -159,7 +170,8 @@ The UI shows only messages from `getErrorMessage()`. These are written on the cl
 | Aborted | Ignored, since it means a newer request replaced this one |
 
 ### Testing strategy
-_TBD_
+
+Most tests are page-level integration tests. They render the real route tree (`renderApp(url)`) against the real MSW handlers, and interact the way a user would with Testing Library and user-event. Smaller unit tests cover the pure logic: URL param parsing, the HTTP client's error mapping, the mutation hooks' optimistic/rollback behavior, and the mock API contract. Mocks are deterministic: the data is seeded, there's no latency, and random failures are off. Individual tests inject failures with `server.use(...)`.
 
 ### Styling approach
 
@@ -190,8 +202,8 @@ Tailwind CSS v4 with semantic design tokens (`--color-surface`, `--color-muted`,
 ## 6. Accessibility
 
 - **Keyboard behavior:** a skip link leads to the main content. Each incident's title is a real link, and ArrowUp/ArrowDown/Home/End move between rows. Filter menus support arrow keys, typeahead and Esc. Search commits on Enter and clears on Escape. Sortable headers are buttons.
-- **Focus management:** after returning from an incident, focus goes back to that incident's row, which is marked "Last viewed" in text, not by color alone. Closing a filter menu returns focus to its trigger. Focus rings are visible for keyboard users everywhere.
-- **Form error handling:** _TBD_
+- **Focus management:** each page moves focus to its `<h1>` when it opens. After a status change, focus moves to the new status, because the button that was clicked is replaced. The discard dialog traps focus, gives initial focus to the safe action, closes on Escape, and returns focus to the element that opened it. After returning from an incident, focus goes back to that incident's row, which is marked "Last viewed" in text, not by color alone. Closing a filter menu returns focus to its trigger. Focus rings are visible for keyboard users everywhere.
+- **Form error handling:** every field has a visible label. Errors are linked to their field with `aria-describedby`, marked with `aria-invalid`, shown as text with an icon (not color alone), summarized in an alert after submit, and focus moves to the first invalid field. Character counters show limits.
 - **Tooling:** jest-axe in the page tests, plus manual keyboard and screen reader checks.
 - **Announcements:** result counts are announced politely once a search settles. Error toasts are announced assertively and other toasts politely. Page titles change on navigation.
 - **Known limitations:** _TBD_
@@ -212,9 +224,9 @@ Tailwind CSS v4 with semantic design tokens (`--color-surface`, `--color-muted`,
 - [x] Data layer (HTTP client, query hooks, mutations, URL state, toast store)
 - [x] Incident list (search, filters, sort, pagination, URL state, all list states, keyboard rows, responsive)
 - [x] Routing (lazy pages, route error boundary, 404)
-- [ ] Incident details
-- [ ] Create incident
-- [ ] Automated tests
+- [x] Incident details (status change, assign/unassign, notes, 404, stale/error states)
+- [x] Create incident (validation, error summary, server errors, duplicate-submit guard, unsaved-changes dialog)
+- [x] Automated tests (75 tests: unit, hook, page integration, axe)
 - [ ] Deployment
 - [ ] Real-time updates (`GET /api/incidents/events`): optional, not implemented
 - [x] API reference (`docs/API.md`)
