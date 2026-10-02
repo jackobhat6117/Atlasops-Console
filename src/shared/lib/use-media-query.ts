@@ -18,3 +18,6 @@ export function useMediaQuery(query: string) {
 
 /** Tailwind `md` breakpoint (768px). */
 export const DESKTOP_QUERY = '(min-width: 768px)'
+
+/** Tailwind `lg` breakpoint (1024px): wide enough for a persistent sidebar. */
+export const SIDEBAR_QUERY = '(min-width: 1024px)'

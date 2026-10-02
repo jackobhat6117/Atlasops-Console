@@ -73,7 +73,7 @@ const IncidentRow = memo(function IncidentRow({ incident, highlighted, linkState
         highlighted && 'bg-accent-soft shadow-[inset_3px_0_0_var(--color-accent)]',
       )}
     >
-      <td className="px-4 py-3.5 font-mono text-xs whitespace-nowrap text-muted">{incident.id}</td>
+      <td className="py-3.5 pr-3 pl-5 font-mono text-xs whitespace-nowrap text-muted">{incident.id}</td>
       <td className="max-w-0 px-3 py-3.5">
         <Link
           to={paths.incident(incident.id)}
@@ -86,7 +86,13 @@ const IncidentRow = memo(function IncidentRow({ incident, highlighted, linkState
           {incident.title}
         </Link>
         {highlighted && <LastViewedTag />}
-        <span className="mt-0.5 block truncate text-xs text-muted lg:hidden">{incident.service}</span>
+        {/* Service and assignee move into a muted line while their columns are hidden. */}
+        <span className="mt-0.5 flex gap-x-3 truncate text-xs text-muted @5xl:hidden">
+          <span>{incident.service}</span>
+          <span className="@4xl:hidden">
+            {incident.assignee ? incident.assignee.name : <span className="italic">Unassigned</span>}
+          </span>
+        </span>
       </td>
       <td className="px-3 py-3.5">
         <SeverityBadge severity={incident.severity} />
@@ -94,16 +100,16 @@ const IncidentRow = memo(function IncidentRow({ incident, highlighted, linkState
       <td className="px-3 py-3.5">
         <StatusBadge status={incident.status} />
       </td>
-      <td className="hidden px-3 py-3.5 whitespace-nowrap text-muted lg:table-cell">{incident.service}</td>
-      <td className="truncate px-3 py-3.5">
+      <td className="hidden px-3 py-3.5 whitespace-nowrap text-muted @5xl:table-cell">{incident.service}</td>
+      <td className="hidden truncate px-3 py-3.5 @4xl:table-cell">
         {incident.assignee ? incident.assignee.name : <span className="text-subtle italic">Unassigned</span>}
       </td>
-      <td className="hidden px-3 py-3.5 whitespace-nowrap text-muted xl:table-cell">
+      <td className="hidden px-3 py-3.5 whitespace-nowrap text-muted @6xl:table-cell">
         <time dateTime={incident.createdAt} title={formatDateTime(incident.createdAt)}>
           {formatRelativeTime(incident.createdAt)}
         </time>
       </td>
-      <td className="px-4 py-3.5 whitespace-nowrap text-muted">
+      <td className="py-3.5 pr-5 pl-3 whitespace-nowrap text-muted">
         <time dateTime={incident.updatedAt} title={formatDateTime(incident.updatedAt)}>
           {formatRelativeTime(incident.updatedAt)}
         </time>
@@ -140,7 +146,7 @@ export function IncidentTable({
   )
 
   return (
-    <div className="overflow-x-auto">
+    <div className="@container overflow-x-auto">
       <table
         className={cn('w-full table-fixed text-left text-sm', isStale && 'opacity-60 transition-opacity')}
         aria-busy={isStale || undefined}
@@ -152,7 +158,7 @@ export function IncidentTable({
         </caption>
         <thead className="bg-surface-muted/80 text-[11px] tracking-wide uppercase">
           <tr>
-            <th scope="col" className="w-24 px-3 py-2 font-semibold text-muted">
+            <th scope="col" className="w-24 py-2 pr-3 pl-5 font-semibold text-muted">
               ID
             </th>
             <th scope="col" className="px-3 py-2 font-semibold text-muted">
@@ -162,10 +168,10 @@ export function IncidentTable({
             <th scope="col" className="w-36 px-3 py-2 font-semibold text-muted">
               Status
             </th>
-            <th scope="col" className="hidden w-40 px-3 py-2 font-semibold text-muted lg:table-cell">
+            <th scope="col" className="hidden w-40 px-3 py-2 font-semibold text-muted @5xl:table-cell">
               Service
             </th>
-            <th scope="col" className="w-36 px-3 py-2 font-semibold text-muted">
+            <th scope="col" className="hidden w-36 px-3 py-2 font-semibold text-muted @4xl:table-cell">
               Assignee
             </th>
             <SortableHeader
@@ -173,7 +179,7 @@ export function IncidentTable({
               sort={sort}
               order={order}
               onSortChange={onSortChange}
-              className="hidden w-32 xl:table-cell"
+              className="hidden w-32 @6xl:table-cell"
             />
             <SortableHeader field="updatedAt" sort={sort} order={order} onSortChange={onSortChange} className="w-32" />
           </tr>

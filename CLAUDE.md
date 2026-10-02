@@ -35,7 +35,9 @@ Stack: React 19, TypeScript, TanStack Query (server state), Zustand (shared clie
 ```
 src/
   app/        App (QueryProvider + RouterProvider), router.tsx (lazy routes, error boundary),
-              layouts/RootLayout (skip link, header, Toaster, ScrollRestoration), ui/ (error, fallback screens)
+              layouts/RootLayout (skip link, Toaster, ScrollRestoration; sidebar ≥1024px, compact tabs below),
+ layouts/AppNav + nav-config (nav items, saved "Views" as filter URLs, live counts from the dashboard query),
+ ui/ (error, fallback screens)
   pages/      incidents-list, incident-detail (+ IncidentProperties sidebar), create-incident, not-found
   widgets/    incident-list (table on ≥768px / cards on phones, sortable headers, arrow-key rows),
               incident-notes (NoteList timeline + AddNoteForm)

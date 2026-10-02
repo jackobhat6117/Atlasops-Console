@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
 import type { DashboardSummary } from '@/entities/dashboard'
-import { STATUS_LABELS, SeverityBadge, StatusBadge, type IncidentStatus } from '@/entities/incident'
+import { STATUS_LABELS, type IncidentStatus } from '@/entities/incident'
 import { paths } from '@/shared/config'
-import { cn, formatNumber, formatRelativeTime, pluralize } from '@/shared/lib'
+import { cn, formatNumber, pluralize } from '@/shared/lib'
 import { Panel } from '@/shared/ui'
+import { AttentionList } from './AttentionList'
 
 const OPEN_STATUS = 'triggered,acknowledged,investigating'
 
@@ -118,7 +119,7 @@ export function DashboardOverview({ summary }: { summary: DashboardSummary }) {
         </ul>
       </section>
 
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.6fr)_22rem]">
+      <div className="grid items-start gap-5 2xl:grid-cols-[minmax(0,1.6fr)_22rem]">
         <Panel
           title="Needs attention"
           description="Unresolved incidents, most severe and unowned first"
@@ -131,49 +132,7 @@ export function DashboardOverview({ summary }: { summary: DashboardSummary }) {
           {summary.attention.length === 0 ? (
             <p className="px-5 py-12 text-center text-sm text-muted">Nothing needs attention. The open queue is clear.</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <caption className="sr-only">Unresolved incidents that need a response</caption>
-                <thead className="bg-surface-muted/80 text-[11px] tracking-wide text-muted uppercase">
-                  <tr>
-                    <th scope="col" className="px-4 py-2 font-semibold">Incident</th>
-                    <th scope="col" className="px-3 py-2 font-semibold">Status</th>
-                    <th scope="col" className="hidden px-3 py-2 font-semibold md:table-cell">Service</th>
-                    <th scope="col" className="hidden px-3 py-2 font-semibold sm:table-cell">Assignee</th>
-                    <th scope="col" className="px-4 py-2 font-semibold">Updated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {summary.attention.map((incident) => (
-                    <tr key={incident.id} className="border-t border-line">
-                      <td className="max-w-0 px-4 py-3">
-                        <Link to={paths.incident(incident.id)} className="block rounded-sm hover:text-accent">
-                          <span className="flex items-center gap-2">
-                            <SeverityBadge severity={incident.severity} />
-                            <span className="font-mono text-xs text-muted">{incident.id}</span>
-                          </span>
-                          <span className="mt-1 block truncate font-medium text-fg">{incident.title}</span>
-                        </Link>
-                      </td>
-                      <td className="px-3 py-3">
-                        <StatusBadge status={incident.status} />
-                      </td>
-                      <td className="hidden px-3 py-3 whitespace-nowrap text-muted md:table-cell">{incident.service}</td>
-                      <td className="hidden px-3 py-3 sm:table-cell">
-                        {incident.assignee ? (
-                          incident.assignee.name
-                        ) : (
-                          <span className="font-medium text-warning">Unassigned</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-muted">
-                        <time dateTime={incident.updatedAt}>{formatRelativeTime(incident.updatedAt)}</time>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <AttentionList items={summary.attention} />
           )}
         </Panel>
 
