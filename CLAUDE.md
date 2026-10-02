@@ -8,7 +8,7 @@ AtlasOps Incident Management Console: a senior React take-home (72-hour deadline
 
 The authoritative spec is the assignment brief in `docs/` (`README.md`, `REQUIREMENTS.md`, `MOCK_API.md`, `SUBMISSION.md`). These files are **gitignored on purpose** (they're the company's text and are kept local only), so don't commit them or link to them from published files. Check `REQUIREMENTS.md` before building any feature. It has exact validation limits, required states and acceptance criteria.
 
-Built so far: the mock API (`src/mocks/`, documented in `docs/API.md`) and the data layer (entities, mutation hooks, URL state). Pages, widgets and UI are not built yet. Update this file when the structure changes.
+Built so far: the mock API (`src/mocks/`, documented in `docs/API.md`), the data layer, the design system (`shared/ui`), routing, and the **Incident List page**. The detail and create pages are placeholders. Update this file when the structure changes.
 
 ## Commands
 
@@ -34,20 +34,24 @@ Stack: React 19, TypeScript, TanStack Query (server state), Zustand (shared clie
 
 ```
 src/
-  app/        providers (QueryProvider, BrowserRouter), App shell, ApiUnavailable fallback
-  pages/      route screens (planned: incidents list, incident detail, create incident)
-  widgets/    composite UI blocks (planned: incident table, filter bar, notes timeline)
+  app/        App (QueryProvider + RouterProvider), router.tsx (lazy routes, error boundary),
+              layouts/RootLayout (skip link, header, Toaster, ScrollRestoration), ui/ (error, fallback screens)
+  pages/      incidents-list, incident-detail (placeholder), create-incident (placeholder), not-found
+  widgets/    incident-list (table on ≥768px / cards on phones, sortable headers, arrow-key rows)
   features/   one slice per user action:
               filter-incidents (URL state hook), change-incident-status (optimistic),
               assign-incident, add-incident-note, create-incident
   entities/   incident (schemas, list params, status rules, API, query keys, queries, cache helpers),
               user, service
-  shared/     api (request, ApiError, createQueryClient), config, model (Zustand toast store)
+  shared/     api (request, ApiError, createQueryClient), config (env, `paths` route registry),
+              lib (cn, Intl formatters, useDebouncedCallback, useMediaQuery, useDocumentTitle),
+              model (Zustand toast store), ui (design system: Button, Select, MultiSelectMenu, Pagination,
+              StateMessage, Banner, Toaster, icons)
   mocks/      MSW handlers + seeded DB. Infrastructure outside the FSD layers.
   test/       Vitest setup + createWrapper. Infrastructure outside the FSD layers.
 ```
 
-**FSD rules:**
+**FSD rules (enforced by `no-restricted-imports` in `eslint.config.js`, so `npm run lint` fails on violations):**
 - A layer imports only from layers below it: app → pages → widgets → features → entities → shared.
 - Import other slices only through their `index.ts` public API. Never deep-import (`@/entities/incident/model/...`) from outside the slice.
 - Slices on the same layer don't import each other. The one exception is the `@x` convention: `entities/user/@x/incident.ts` exposes the user schema to the incident entity.
@@ -65,6 +69,24 @@ src/
 - **Navigation:** the detail page must return to the exact list URL. Carry the `search` value from `useIncidentListParams` through to the detail link.
 - **Accessibility is graded:** semantic `<table>` with `aria-sort`, keyboard-navigable rows, status and severity shown with text or icon (never color alone), Radix for dialogs and selects (focus trap, Esc closes, focus returns to the trigger), form errors linked with `aria-describedby` and focus moved to the first invalid field, and toasts rendered in an `aria-live` region. Notes are rendered as plain text. Never use `dangerouslySetInnerHTML`.
 - **Required tests:** list rendering, search/filter, a successful mutation, a failed mutation with rollback (already covered at hook level), form validation, and one accessibility interaction. Test observable behavior with RTL and user-event. Use `createWrapper()` from `src/test/utils.tsx`. Override endpoints with `server.use(http.patch('*/api/...', ...))`.
+
+### UI conventions
+
+- Style with the semantic Tailwind tokens defined in `src/index.css` `@theme` (`bg-surface`, `text-muted`, `border-line`, `bg-accent`, …), not raw palette colors. Focus rings are global (`:focus-visible`), so don't remove outlines.
+- Component files export only components (Fast Refresh lint rule). Put helpers and style maps in separate files (e.g. `shared/ui/button-styles.ts`, `shared/lib/pagination.ts`).
+- The React Compiler lint rules are on: no mutating closure variables or reading refs during render (see `useDebouncedCallback`).
+- Use `paths.*` from `@/shared/config` for every URL. List → detail links pass `IncidentListReturnState` (`listSearch`, `lastViewedId`) as router state. The detail page's `BackToIncidentsLink` uses it to restore the list, and the list then focuses and marks the "Last viewed" row.
+- Layouts that differ structurally use `useMediaQuery(DESKTOP_QUERY)` and mount only one variant, instead of CSS-hiding duplicate content.
+- Every page calls `useDocumentTitle`. Every async view handles pending, error-without-data (retry), error-with-stale-data (Banner), and empty/no-results states.
+- Toast live regions are plain `aria-live` containers, not `role="alert"`, so a page's real alert stays queryable.
+
+### Testing helpers
+
+- `renderApp(url)` (`src/test/render-app.tsx`) renders the real route tree with a memory router. Use it for page tests, and read the URL with `location()`.
+- `setViewportWidth(375)` (`src/test/browser-polyfills.ts`) simulates phones for `useMediaQuery`. It resets before each test.
+- The polyfills cover `matchMedia`, `scrollIntoView`, pointer capture, `ResizeObserver` and `CSS.escape`, all of which Radix needs in jsdom.
+- Accessibility smoke test: `const results = await axe(container); expect(results.violations).toEqual([])`.
+- The built-in Claude browser pane can't register service workers, so the app shows the API-unavailable screen there. Verify the UI in real Chrome.
 
 ## Submission constraints
 

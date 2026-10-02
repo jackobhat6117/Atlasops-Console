@@ -87,13 +87,13 @@ There is no backend to run. The API is served by Mock Service Worker inside the 
 
 ### Project structure
 
-The code follows [Feature-Sliced Design](https://feature-sliced.design). Layers only import from layers below them, and slices are imported only through their `index.ts` public API.
+The code follows [Feature-Sliced Design](https://feature-sliced.design). Layers only import from layers below them, and slices are imported only through their `index.ts` public API. ESLint enforces both rules (`no-restricted-imports` in `eslint.config.js`), so a violation fails `npm run lint`.
 
 ```text
 src/
-  app/        providers (TanStack Query, router), app shell, API-unavailable fallback
-  pages/      route screens                                   (planned)
-  widgets/    composite blocks: incident table, filter bar    (planned)
+  app/        App, router (lazy routes + error boundary), root layout, fallback screens
+  pages/      incidents-list, incident-detail, create-incident, not-found
+  widgets/    incident-list: table (≥768px) / cards (phones), sortable, keyboard rows
   features/   user actions
     filter-incidents/        URL-synced search, filter, sort, page
     change-incident-status/  optimistic status mutation
@@ -104,7 +104,8 @@ src/
     incident/   Zod schemas, list params, status rules, API, query keys, queries, cache helpers
     user/       user schema, users query
     service/    services query
-  shared/     api (HTTP client, ApiError, QueryClient), config, model (toast store)
+  shared/     api (HTTP client, ApiError, QueryClient), config (route paths), lib (formatters, hooks),
+              model (toast store), ui (design system)
   mocks/      MSW handlers + seeded data (infrastructure, outside the layers)
   test/       Vitest setup and render helpers (infrastructure, outside the layers)
 docs/
@@ -161,7 +162,8 @@ The UI shows only messages from `getErrorMessage()`. These are written on the cl
 _TBD_
 
 ### Styling approach
-_TBD_
+
+Tailwind CSS v4 with semantic design tokens (`--color-surface`, `--color-muted`, `--color-accent`, …) defined once in `src/index.css`. Shared primitives live in `shared/ui`. Accessible behavior comes from Radix UI where it is hard to get right (menus) and from native elements where they already work (`<select>`, `<table>`). Reduced-motion preferences are respected globally.
 
 ---
 
@@ -171,7 +173,7 @@ _TBD_
 2. **TanStack Query for server state; Zustand only for toasts.** Nearly all "global" state here is server data (TanStack Query) or list state (the URL). The only shared client state left is the toast queue: mutation callbacks push to it outside React components, and one `aria-live` region at the root reads it. Zustand handles that in a few lines without a provider. Putting server data or filters in it would duplicate the cache and the URL.
 3. **Feature-Sliced Design.** It gives clear, enforceable boundaries: entities own data and API, features own user actions, and pages compose them. The trade-off is more folders and `index.ts` files than a small app strictly needs.
 4. **One shared list-params parser.** The UI and the mock API use the same sanitizer, so the client and the "server" can't disagree about what a URL means.
-5. **Table / card layout choice.** _TBD_
+5. **Table on desktop, cards on phones.** A real `<table>` gives the densest readable layout, along with native header and cell semantics and `aria-sort`. Below 768px it would need horizontal scrolling, so phones get a card list instead. Only one layout is mounted (`useMediaQuery`), not both with one hidden by CSS, so the DOM and accessibility tree never contain duplicate rows.
 6. **Optimistic status, pessimistic everything else.** The status change is optimistic: it patches the detail and every cached list page, rolls back on error, and sends `version` so concurrent edits return 409 instead of silently overwriting. Assign, note and create wait for the server. Assignment depends on server-side user validation, and a note must never look saved when it wasn't.
 
 ---
@@ -187,10 +189,11 @@ _TBD_
 
 ## 6. Accessibility
 
-- **Keyboard behavior:** _TBD_
-- **Focus management:** _TBD_
+- **Keyboard behavior:** a skip link leads to the main content. Each incident's title is a real link, and ArrowUp/ArrowDown/Home/End move between rows. Filter menus support arrow keys, typeahead and Esc. Search commits on Enter and clears on Escape. Sortable headers are buttons.
+- **Focus management:** after returning from an incident, focus goes back to that incident's row, which is marked "Last viewed" in text, not by color alone. Closing a filter menu returns focus to its trigger. Focus rings are visible for keyboard users everywhere.
 - **Form error handling:** _TBD_
-- **Tooling:** jest-axe, plus manual keyboard and screen reader checks.
+- **Tooling:** jest-axe in the page tests, plus manual keyboard and screen reader checks.
+- **Announcements:** result counts are announced politely once a search settles. Error toasts are announced assertively and other toasts politely. Page titles change on navigation.
 - **Known limitations:** _TBD_
 
 ---
@@ -207,7 +210,8 @@ _TBD_
 
 - [x] Mock API (MSW handlers, seeded data, contract tests)
 - [x] Data layer (HTTP client, query hooks, mutations, URL state, toast store)
-- [ ] Incident list
+- [x] Incident list (search, filters, sort, pagination, URL state, all list states, keyboard rows, responsive)
+- [x] Routing (lazy pages, route error boundary, 404)
 - [ ] Incident details
 - [ ] Create incident
 - [ ] Automated tests
