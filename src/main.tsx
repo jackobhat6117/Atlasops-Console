@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import { ApiUnavailable } from './app/ApiUnavailable'
+import { ApiUnavailable } from './app/ui/ApiUnavailable'
 import { App } from './app/App'
 
 // The mock API runs in every environment, including the deployed demo,

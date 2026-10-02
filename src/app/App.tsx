@@ -1,12 +1,13 @@
-import { AppProviders } from './providers'
+import { useState } from 'react'
+import { RouterProvider } from 'react-router-dom'
+import { QueryProvider } from './providers/QueryProvider'
+import { createAppRouter } from './router'
 
-// Placeholder shell. Routes and pages are added with the Incident List screen.
 export function App() {
+  const [router] = useState(createAppRouter)
   return (
-    <AppProviders>
-      <main className="p-6">
-        <h1 className="text-xl font-semibold">AtlasOps</h1>
-      </main>
-    </AppProviders>
+    <QueryProvider>
+      <RouterProvider router={router} />
+    </QueryProvider>
   )
 }
