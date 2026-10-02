@@ -1,63 +1,13 @@
 import {
-  INCIDENT_SEVERITIES,
-  INCIDENT_STATUSES,
   SEVERITY_RANK,
-  SORT_FIELDS,
   type Incident,
-  type IncidentSeverity,
-  type IncidentStatus,
+  type IncidentListParams,
   type SortField,
-  type SortOrder,
-} from '../features/incidents/schemas'
+} from '@/entities/incident'
 
 // Pure search/filter/sort/paginate logic behind GET /api/incidents.
-// Unknown or malformed query values are ignored instead of rejected, so a
-// hand-edited URL can never break the list.
-
-export const DEFAULT_PAGE_SIZE = 25
-export const MAX_PAGE_SIZE = 100
-const MAX_QUERY_LENGTH = 200
-
-export interface IncidentQuery {
-  q: string
-  status: IncidentStatus[]
-  severity: IncidentSeverity[]
-  service: string[]
-  sort: SortField
-  order: SortOrder
-  page: number
-  pageSize: number
-}
-
-function parseList<T extends string>(raw: string | null, allowed?: readonly T[]): T[] {
-  if (!raw) return []
-  const values = raw
-    .split(',')
-    .map((value) => value.trim())
-    .filter(Boolean)
-  const unique = Array.from(new Set(values))
-  return (allowed ? unique.filter((value) => allowed.includes(value as T)) : unique) as T[]
-}
-
-function parsePositiveInt(raw: string | null, fallback: number, max = Number.MAX_SAFE_INTEGER) {
-  const value = Number(raw)
-  if (!Number.isInteger(value) || value < 1) return fallback
-  return Math.min(value, max)
-}
-
-export function parseIncidentQuery(params: URLSearchParams): IncidentQuery {
-  const sort = params.get('sort')
-  return {
-    q: (params.get('q') ?? '').trim().slice(0, MAX_QUERY_LENGTH),
-    status: parseList(params.get('status'), INCIDENT_STATUSES),
-    severity: parseList(params.get('severity'), INCIDENT_SEVERITIES),
-    service: parseList(params.get('service')),
-    sort: SORT_FIELDS.includes(sort as SortField) ? (sort as SortField) : 'updatedAt',
-    order: params.get('order') === 'asc' ? 'asc' : 'desc',
-    page: parsePositiveInt(params.get('page'), 1),
-    pageSize: parsePositiveInt(params.get('pageSize'), DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE),
-  }
-}
+// Query values are sanitized by the same parser the UI uses (parseIncidentListParams):
+// unknown or malformed values are ignored instead of rejected.
 
 function matchesSearch(incident: Incident, q: string) {
   if (!q) return true
@@ -87,7 +37,7 @@ function compareBy(sort: SortField) {
   }
 }
 
-export function queryIncidents(all: Incident[], query: IncidentQuery) {
+export function queryIncidents(all: Incident[], query: IncidentListParams) {
   const filtered = all.filter(
     (incident) =>
       (query.status.length === 0 || query.status.includes(incident.status)) &&

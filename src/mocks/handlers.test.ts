@@ -5,7 +5,7 @@ import {
   incidentSchema,
   statusUpdateResponseSchema,
   type Incident,
-} from '../features/incidents/schemas'
+} from '@/entities/incident'
 import { configureMock } from './config'
 import { INCIDENT_COUNT } from './seed'
 
@@ -229,6 +229,13 @@ describe('failure simulation', () => {
     configureMock({ devControls: false })
     const { status } = await send('/incidents', { headers: { 'X-Mock-Failure': '500' } })
     expect(status).toBe(200)
+  })
+
+  it('applies the configured latency when no delay header is sent', async () => {
+    configureMock({ minDelayMs: 150, maxDelayMs: 150 })
+    const start = performance.now()
+    await send('/services')
+    expect(performance.now() - start).toBeGreaterThanOrEqual(140)
   })
 
   it('fails randomly at the configured rate', async () => {

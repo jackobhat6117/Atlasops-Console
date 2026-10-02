@@ -1,10 +1,5 @@
-import type {
-  Incident,
-  IncidentNote,
-  IncidentSeverity,
-  IncidentStatus,
-  UserSummary,
-} from '../features/incidents/schemas'
+import type { Incident, IncidentNote, IncidentSeverity, IncidentStatus } from '@/entities/incident'
+import type { UserSummary } from '@/entities/user'
 
 // Deterministic fixture generation. The same seed always produces the same
 // 1,043 incidents, so the UI, demos and tests all see identical data.

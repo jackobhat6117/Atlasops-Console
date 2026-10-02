@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { userSummarySchema } from '@/entities/user/@x/incident'
 
 // Single source of truth for the incident model (REQUIREMENTS §3).
 // Used to validate API responses, the create form, and mock API request bodies.
@@ -8,13 +9,6 @@ export const INCIDENT_SEVERITIES = ['critical', 'high', 'medium', 'low'] as cons
 
 export const incidentStatusSchema = z.enum(INCIDENT_STATUSES)
 export const incidentSeveritySchema = z.enum(INCIDENT_SEVERITIES)
-
-export const userSummarySchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  email: z.string(),
-  avatarUrl: z.string().optional(),
-})
 
 export const incidentNoteSchema = z.object({
   id: z.string(),
@@ -96,7 +90,6 @@ export const addNoteInputSchema = z.object({
 
 export type IncidentStatus = z.infer<typeof incidentStatusSchema>
 export type IncidentSeverity = z.infer<typeof incidentSeveritySchema>
-export type UserSummary = z.infer<typeof userSummarySchema>
 export type IncidentNote = z.infer<typeof incidentNoteSchema>
 export type Incident = z.infer<typeof incidentSchema>
 export type IncidentListResponse = z.infer<typeof incidentListResponseSchema>
@@ -105,15 +98,3 @@ export type CreateIncidentInput = z.infer<typeof createIncidentInputSchema>
 export type UpdateStatusInput = z.infer<typeof updateStatusInputSchema>
 export type AssignInput = z.infer<typeof assignInputSchema>
 export type AddNoteInput = z.infer<typeof addNoteInputSchema>
-
-export const SORT_FIELDS = ['updatedAt', 'createdAt', 'severity'] as const
-export type SortField = (typeof SORT_FIELDS)[number]
-export type SortOrder = 'asc' | 'desc'
-
-// Higher rank = more severe. Used for severity sorting on both server and client.
-export const SEVERITY_RANK: Record<IncidentSeverity, number> = {
-  critical: 4,
-  high: 3,
-  medium: 2,
-  low: 1,
-}

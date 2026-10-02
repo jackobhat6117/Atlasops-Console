@@ -4,13 +4,14 @@ import {
   addNoteInputSchema,
   assignInputSchema,
   createIncidentInputSchema,
+  parseIncidentListParams,
   updateStatusInputSchema,
   type Incident,
   type IncidentNote,
-} from '../features/incidents/schemas'
+} from '@/entities/incident'
 import { mockConfig } from './config'
 import { findIncident, getAllIncidents, nextIncidentId, nextNoteId, saveIncident } from './db'
-import { parseIncidentQuery, queryIncidents } from './query'
+import { queryIncidents } from './query'
 import { CURRENT_USER, SERVICES, USERS } from './seed'
 
 // MSW request handlers implementing the contract in docs/API.md.
@@ -41,10 +42,11 @@ function validationError(fieldErrors: Record<string, string[] | undefined>, mess
 async function simulateNetwork(request: Request): Promise<Response | null> {
   const { devControls, minDelayMs, maxDelayMs, failureRate } = mockConfig
 
-  const delayHeader = devControls ? Number(request.headers.get('X-Mock-Delay')) : NaN
+  // Only a present, numeric header overrides latency (Number(null) would be 0).
+  const delayHeader = devControls ? request.headers.get('X-Mock-Delay') : null
   const delayMs =
-    Number.isFinite(delayHeader) && delayHeader >= 0
-      ? Math.min(delayHeader, MAX_DEV_DELAY_MS)
+    delayHeader !== null && /^\d+$/.test(delayHeader)
+      ? Math.min(Number(delayHeader), MAX_DEV_DELAY_MS)
       : minDelayMs + Math.random() * (maxDelayMs - minDelayMs)
   if (delayMs > 0) await delay(delayMs)
 
@@ -93,7 +95,7 @@ export const handlers = [
   http.get('/api/incidents', async ({ request }) => {
     const simulated = await simulateNetwork(request)
     if (simulated) return simulated
-    const query = parseIncidentQuery(new URL(request.url).searchParams)
+    const query = parseIncidentListParams(new URL(request.url).searchParams)
     return HttpResponse.json(queryIncidents(getAllIncidents(), query))
   }),
 

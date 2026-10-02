@@ -1,4 +1,4 @@
-import type { Incident } from '../features/incidents/schemas'
+import type { Incident } from '@/entities/incident'
 import { FIRST_INCIDENT_NUMBER, formatIncidentId, generateIncidents } from './seed'
 
 // In-memory "database" for the mock API. It lives in the service worker's page
