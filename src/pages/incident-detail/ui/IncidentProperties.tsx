@@ -17,7 +17,7 @@ export function IncidentProperties({ incident }: { incident: Incident }) {
   return (
     <aside
       aria-labelledby="incident-properties-heading"
-      className="flex flex-col gap-5 rounded-lg border border-line bg-surface p-4 shadow-sm"
+      className="flex flex-col gap-5 rounded-xl border border-line bg-surface p-5 shadow-panel"
     >
       <h2 id="incident-properties-heading" className="sr-only">
         Properties and actions

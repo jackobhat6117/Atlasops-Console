@@ -44,6 +44,12 @@ describe('GET /api/incidents', () => {
     expect(second.items.map((i) => i.id)).toEqual(first.items.map((i) => i.id))
   })
 
+  it('filters to incidents with no assignee', async () => {
+    const result = await list('?unassigned=1&pageSize=100')
+    expect(result.total).toBeGreaterThan(0)
+    expect(result.items.every((incident) => incident.assignee === null)).toBe(true)
+  })
+
   it('searches by id, title, service and assignee name (case-insensitive)', async () => {
     expect((await list('?q=inc-1042')).items.map((i) => i.id)).toContain('INC-1042')
 
@@ -206,6 +212,23 @@ describe('reference data', () => {
   it('lists users and services', async () => {
     expect((await send('/users')).body.items.length).toBeGreaterThan(0)
     expect((await send('/services')).body.items).toContain('payments-api')
+  })
+})
+
+describe('GET /api/dashboard/summary', () => {
+  it('returns the triage summary without the full incident catalog', async () => {
+    const { status, body } = await send('/dashboard/summary')
+
+    expect(status).toBe(200)
+    expect(body.totals.incidents).toBe(INCIDENT_COUNT)
+    expect(body.byStatus.reduce((sum: number, item: { count: number }) => sum + item.count, 0)).toBe(
+      INCIDENT_COUNT,
+    )
+    expect(body.services).toHaveLength(5)
+    expect(body.attention.length).toBeLessThanOrEqual(8)
+    expect(body.attention.every((incident: Incident) => incident.status !== 'resolved')).toBe(true)
+    expect(body.attention[0].severity).toBe('critical')
+    expect(body.services[0].critical).toBeGreaterThanOrEqual(body.services[1].critical)
   })
 })
 

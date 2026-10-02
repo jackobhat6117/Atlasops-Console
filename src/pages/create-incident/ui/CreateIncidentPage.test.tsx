@@ -64,6 +64,32 @@ describe('Create incident page', () => {
     expect(screen.getByRole('complementary')).toHaveTextContent('checkout-web')
   })
 
+  it('updates the live preview as the form is filled', async () => {
+    const { user } = await openForm()
+    const preview = screen.getByRole('region', { name: 'Preview' })
+    expect(preview).toHaveTextContent('Untitled incident')
+    expect(preview).toHaveTextContent('No severity')
+
+    await fillValidForm(user)
+
+    expect(preview).toHaveTextContent('Checkout latency increased')
+    expect(within(preview).getByText('High')).toBeInTheDocument()
+    expect(preview).toHaveTextContent('checkout-web')
+    expect(preview).toHaveTextContent('Omar Hassan')
+  })
+
+  it('submits with Ctrl+Enter and supports choosing the initial status', async () => {
+    const { user } = await openForm()
+    await fillValidForm(user)
+    await user.click(screen.getByRole('radio', { name: 'Investigating' }))
+
+    await user.click(screen.getByLabelText(/^Title/))
+    await user.keyboard('{Control>}{Enter}{/Control}')
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Checkout latency increased' })).toBeInTheDocument()
+    expect(screen.getByRole('complementary')).toHaveTextContent('Investigating')
+  })
+
   it('sends only one request when submit is clicked repeatedly', async () => {
     let posts = 0
     server.use(

@@ -8,8 +8,13 @@ export const SEED = 20260801
 export const INCIDENT_COUNT = 1043
 export const FIRST_INCIDENT_NUMBER = 1001
 
-// All generated dates are relative to this fixed instant (never Date.now()).
-const BASE_TIME = Date.parse('2026-08-01T12:00:00.000Z')
+// Generated dates are relative to the start of the current hour, so the demo
+// always looks live ("updated 2 hours ago"). IDs, field values and ordering
+// depend only on the seed, so they stay deterministic; only absolute times shift.
+const HOUR_MS = 60 * 60 * 1000
+function baseTime() {
+  return Math.floor(Date.now() / HOUR_MS) * HOUR_MS
+}
 const DAY_MS = 24 * 60 * 60 * 1000
 
 /** mulberry32: tiny, fast, seedable PRNG returning floats in [0, 1). */
@@ -114,6 +119,7 @@ export function formatIncidentId(n: number) {
 
 export function generateIncidents(seed = SEED, count = INCIDENT_COUNT): Incident[] {
   const random = createRandom(seed)
+  const BASE_TIME = baseTime()
   const incidents: Incident[] = []
   let noteCounter = 1
 
@@ -127,7 +133,8 @@ export function generateIncidents(seed = SEED, count = INCIDENT_COUNT): Incident
     // Triggered incidents are usually not yet owned.
     const assignee = status === 'triggered' && random() < 0.7 ? null : pick(random, USERS)
 
-    const createdMs = BASE_TIME - Math.floor(random() * 90 * DAY_MS)
+    // Up to 30 days old, with ~14h headroom: notes (≤3 × ~4h) and the final update never land in the future.
+    const createdMs = BASE_TIME - 14 * HOUR_MS - Math.floor(random() * 30 * DAY_MS)
     const noteCount = status === 'triggered' ? 0 : Math.floor(random() * 4)
     const notes: IncidentNote[] = []
     let lastMs = createdMs

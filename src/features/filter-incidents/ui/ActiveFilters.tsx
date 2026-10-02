@@ -13,6 +13,7 @@ interface ActiveFiltersProps {
   params: IncidentListParams
   onRemoveSearch: () => void
   onRemoveFilter: (key: FilterKey, value: string) => void
+  onClearUnassigned: () => void
   onClearAll: () => void
 }
 
@@ -33,7 +34,13 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
 }
 
 /** Visible summary of every active filter, each removable on its own, plus "Clear all". */
-export function ActiveFilters({ params, onRemoveSearch, onRemoveFilter, onClearAll }: ActiveFiltersProps) {
+export function ActiveFilters({
+  params,
+  onRemoveSearch,
+  onRemoveFilter,
+  onClearUnassigned,
+  onClearAll,
+}: ActiveFiltersProps) {
   const chips = [
     ...(params.q ? [{ key: 'q', label: `Search: “${params.q}”`, remove: onRemoveSearch }] : []),
     ...params.status.map((value: IncidentStatus) => ({
@@ -51,6 +58,9 @@ export function ActiveFilters({ params, onRemoveSearch, onRemoveFilter, onClearA
       label: `Service: ${value}`,
       remove: () => onRemoveFilter('service', value),
     })),
+    ...(params.unassigned
+      ? [{ key: 'unassigned', label: 'Assignee: Unassigned', remove: onClearUnassigned }]
+      : []),
   ]
 
   if (chips.length === 0) return null

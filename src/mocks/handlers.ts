@@ -1,6 +1,8 @@
 import { delay, http, HttpResponse } from 'msw'
 import { z } from 'zod'
 import {
+  INCIDENT_STATUSES,
+  SEVERITY_RANK,
   addNoteInputSchema,
   assignInputSchema,
   createIncidentInputSchema,
@@ -91,7 +93,59 @@ function sortedNotes(incident: Incident): Incident {
   }
 }
 
+const ATTENTION_LIMIT = 8
+
+function isOpen(incident: Incident) {
+  return incident.status !== 'resolved'
+}
+
+function dashboardSummary(incidents: Incident[]) {
+  const open = incidents.filter(isOpen)
+  const services = Array.from(new Set(incidents.map((incident) => incident.service))).sort()
+  const attention = [...open]
+    .sort(
+      (a, b) =>
+        SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity] ||
+        Number(b.assignee === null) - Number(a.assignee === null) ||
+        b.updatedAt.localeCompare(a.updatedAt),
+    )
+    .slice(0, ATTENTION_LIMIT)
+    .map((incident) => ({ ...incident, notes: [] }))
+
+  return {
+    generatedAt: new Date().toISOString(),
+    totals: {
+      incidents: incidents.length,
+      open: open.length,
+      critical: open.filter((incident) => incident.severity === 'critical').length,
+      unassigned: open.filter((incident) => incident.assignee === null).length,
+      triggered: incidents.filter((incident) => incident.status === 'triggered').length,
+    },
+    byStatus: INCIDENT_STATUSES.map((status) => ({
+      status,
+      count: incidents.filter((incident) => incident.status === status).length,
+    })),
+    services: services
+      .map((service) => {
+        const rows = open.filter((incident) => incident.service === service)
+        return {
+          service,
+          open: rows.length,
+          critical: rows.filter((incident) => incident.severity === 'critical').length,
+        }
+      })
+      .sort((a, b) => b.critical - a.critical || b.open - a.open || a.service.localeCompare(b.service)),
+    attention,
+  }
+}
+
 export const handlers = [
+  http.get('/api/dashboard/summary', async ({ request }) => {
+    const simulated = await simulateNetwork(request)
+    if (simulated) return simulated
+    return HttpResponse.json(dashboardSummary(getAllIncidents()))
+  }),
+
   http.get('/api/incidents', async ({ request }) => {
     const simulated = await simulateNetwork(request)
     if (simulated) return simulated

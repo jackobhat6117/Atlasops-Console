@@ -14,7 +14,8 @@ Base URL: `/api`
 
 | Aspect | Behavior |
 |---|---|
-| Dataset | 1,043 incidents (`INC-1001` … `INC-2043`), 10 users, 5 services, generated from a fixed seed. Identical on every load. |
+| Dataset | 1,043 incidents (`INC-1001` … `INC-2043`), 10 users, 5 services, generated from a fixed seed. IDs, values and ordering are identical on every load. Timestamps are relative to the current hour (up to 30 days old), so the demo looks live. |
+| Transport | MSW service worker. Where service workers are blocked (private modes, embedded webviews), same-origin `/api/*` `fetch` calls are routed through the same handlers in the page, with abort and network-error semantics preserved. |
 | Persistence | In memory. Changes reset when the page reloads. |
 | Latency | Random, 200–1,200 ms per request. |
 | Random failures | 5% of requests return `500 INTERNAL_ERROR` (configurable with `VITE_MOCK_FAILURE_RATE`). |
@@ -110,6 +111,18 @@ Body: `{ "message": "Restarted the worker pool." }`. The message is trimmed and 
 ### `GET /api/services`
 
 `{ "items": string[] }`
+
+### `GET /api/dashboard/summary`
+
+Returns compact operational aggregates for the overview without transferring all incident records:
+
+- `totals`: total, open, unresolved critical, unassigned-open and triggered counts
+- `byStatus`: one count per status, used by the status strip
+- `services`: each monitored service with its open and unresolved-critical counts
+- `attention`: up to eight unresolved incidents, most severe and unowned first
+- `generatedAt`: summary generation timestamp
+
+The summary is computed from the same in-memory incident database, so mutations are reflected on refresh.
 
 ### `GET /api/incidents/events`
 

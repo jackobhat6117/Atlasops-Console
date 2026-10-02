@@ -20,6 +20,8 @@ export interface IncidentListParams {
   status: IncidentStatus[]
   severity: IncidentSeverity[]
   service: string[]
+  /** Open-ownership filter. True means "no assignee". */
+  unassigned: boolean
   sort: SortField
   order: SortOrder
   page: number
@@ -31,6 +33,7 @@ export const DEFAULT_LIST_PARAMS: IncidentListParams = {
   status: [],
   severity: [],
   service: [],
+  unassigned: false,
   sort: 'updatedAt',
   order: 'desc',
   page: 1,
@@ -64,6 +67,7 @@ export function parseIncidentListParams(search: URLSearchParams): IncidentListPa
     status: parseEnumList(search.get('status'), INCIDENT_STATUSES),
     severity: parseEnumList(search.get('severity'), INCIDENT_SEVERITIES),
     service: parseServiceList(search.get('service')),
+    unassigned: search.get('unassigned') === '1',
     sort: SORT_FIELDS.includes(sort as SortField) ? (sort as SortField) : DEFAULT_LIST_PARAMS.sort,
     order: search.get('order') === 'asc' ? 'asc' : 'desc',
     page: parsePositiveInt(search.get('page'), DEFAULT_LIST_PARAMS.page),
@@ -79,6 +83,7 @@ export function serializeIncidentListParams(params: IncidentListParams): URLSear
   if (normalized.status.length) search.set('status', normalized.status.join(','))
   if (normalized.severity.length) search.set('severity', normalized.severity.join(','))
   if (normalized.service.length) search.set('service', normalized.service.join(','))
+  if (normalized.unassigned) search.set('unassigned', '1')
   if (normalized.sort !== DEFAULT_LIST_PARAMS.sort) search.set('sort', normalized.sort)
   if (normalized.order !== DEFAULT_LIST_PARAMS.order) search.set('order', normalized.order)
   if (normalized.page !== DEFAULT_LIST_PARAMS.page) search.set('page', String(normalized.page))
@@ -93,6 +98,7 @@ function toRawSearchParams(params: IncidentListParams) {
     status: params.status.join(','),
     severity: params.severity.join(','),
     service: params.service.join(','),
+    unassigned: params.unassigned ? '1' : '',
     sort: params.sort,
     order: params.order,
     page: String(params.page),
@@ -102,6 +108,10 @@ function toRawSearchParams(params: IncidentListParams) {
 
 export function hasActiveFilters(params: IncidentListParams) {
   return (
-    params.q !== '' || params.status.length > 0 || params.severity.length > 0 || params.service.length > 0
+    params.q !== '' ||
+    params.status.length > 0 ||
+    params.severity.length > 0 ||
+    params.service.length > 0 ||
+    params.unassigned
   )
 }

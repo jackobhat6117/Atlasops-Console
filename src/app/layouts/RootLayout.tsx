@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet, ScrollRestoration, useNavigation } from 'react-router-dom'
 import { paths } from '@/shared/config'
 import { cn } from '@/shared/lib'
-import { Toaster } from '@/shared/ui'
+import { DashboardIcon, IncidentIcon, Toaster } from '@/shared/ui'
 
 export function RootLayout() {
   const isNavigating = useNavigation().state === 'loading'
@@ -24,25 +24,51 @@ export function RootLayout() {
         )}
       />
 
-      <header className="border-b border-line bg-surface">
-        <div className="mx-auto flex h-14 max-w-screen-2xl items-center gap-6 px-4 sm:px-6 lg:px-8">
-          <Link to={paths.incidents} className="flex items-center gap-2 rounded font-semibold text-fg">
-            <span aria-hidden="true" className="grid size-7 place-items-center rounded-md bg-fg text-xs text-white">
+      <header className="sticky top-0 z-40 border-b border-line bg-surface/95 shadow-header backdrop-blur">
+        <div className="mx-auto flex min-h-16 max-w-screen-2xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+          <Link to={paths.dashboard} className="flex items-center gap-2.5 rounded font-semibold text-fg">
+            <span
+              aria-hidden="true"
+              className="grid size-8 place-items-center rounded-lg bg-fg text-xs font-bold text-white shadow-sm"
+            >
               AO
             </span>
-            AtlasOps
+            <span>
+              <span className="block leading-4">AtlasOps</span>
+              <span className="hidden text-[10px] font-medium tracking-wide text-muted uppercase sm:block">
+                Incident command
+              </span>
+            </span>
           </Link>
-          <nav aria-label="Main">
+          <nav aria-label="Main" className="ml-auto flex self-stretch">
+            <NavLink
+              to={paths.dashboard}
+              end
+              className={({ isActive }) =>
+                cn(
+                  'relative flex items-center gap-2 px-3 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'text-accent after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:bg-accent'
+                    : 'text-muted hover:text-fg',
+                )
+              }
+            >
+              <DashboardIcon />
+              <span className="sr-only sm:not-sr-only">Overview</span>
+            </NavLink>
             <NavLink
               to={paths.incidents}
               end={false}
               className={({ isActive }) =>
                 cn(
-                  'rounded px-2 py-1 text-sm font-medium',
-                  isActive ? 'bg-surface-muted text-fg' : 'text-muted hover:text-fg',
+                  'relative flex items-center gap-2 px-3 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'text-accent after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:bg-accent'
+                    : 'text-muted hover:text-fg',
                 )
               }
             >
+              <IncidentIcon />
               Incidents
             </NavLink>
           </nav>

@@ -1,22 +1,19 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useId, useState } from 'react'
+import { useId, useState, type KeyboardEvent } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 import {
   DESCRIPTION_MAX,
   INCIDENT_SEVERITIES,
   INCIDENT_STATUSES,
-  STATUS_LABELS,
-  SeverityBadge,
   TITLE_MAX,
   type Incident,
-  type IncidentSeverity,
 } from '@/entities/incident'
 import { useServices } from '@/entities/service'
 import { useUsers } from '@/entities/user'
 import { getErrorMessage, isApiError } from '@/shared/api'
 import { paths } from '@/shared/config'
-import { cn, useUnsavedChangesGuard } from '@/shared/lib'
+import { useUnsavedChangesGuard } from '@/shared/lib'
 import {
   AlertOctagonIcon,
   Button,
@@ -39,13 +36,10 @@ import {
   type CreateIncidentFormValues,
 } from '../model/form-schema'
 import { useCreateIncident } from '../model/use-create-incident'
-
-const SEVERITY_HINTS: Record<IncidentSeverity, string> = {
-  critical: 'Outage or data loss affecting customers',
-  high: 'Significant degradation for many users',
-  medium: 'Partial impact, or a workaround exists',
-  low: 'Minor issue, little or no customer impact',
-}
+import { FormSection } from './FormSection'
+import { IncidentPreview } from './IncidentPreview'
+import { SeverityOption } from './SeverityOption'
+import { StatusOption } from './StatusOption'
 
 const FIELD_LABELS: Record<CreateIncidentField, string> = {
   title: 'Title',
@@ -57,12 +51,14 @@ const FIELD_LABELS: Record<CreateIncidentField, string> = {
 }
 
 /**
- * Create-incident form.
+ * Create-incident form: three short sections (what's happening, impact,
+ * response) next to a sticky live preview holding the primary action.
+ *
  * - Validates on submit, then on change, with the shared Zod schema.
  * - Errors appear next to each field and in a summary; focus moves to the first invalid field.
- * - Server field errors (400) map onto the same fields. Other failures show a banner.
+ * - Server field errors (400) map onto the same fields. Other failures show an alert.
  *   Entered data is always kept.
- * - Double submission is blocked while a request is in flight.
+ * - Double submission is blocked while a request is in flight. Ctrl/⌘+Enter submits.
  * - Leaving with unsaved input asks for confirmation.
  */
 export function CreateIncidentForm({ onCreated }: { onCreated: (incident: Incident) => void }) {
@@ -82,47 +78,72 @@ export function CreateIncidentForm({ onCreated }: { onCreated: (incident: Incide
     defaultValues: { title: '', description: '', service: '', status: 'triggered', assigneeId: '' },
   })
   const { errors, isDirty, isSubmitting, submitCount } = form.formState
-  const [title, description] = useWatch({ control: form.control, name: ['title', 'description'] })
+  const values = useWatch({ control: form.control })
 
   const guard = useUnsavedChangesGuard(isDirty && !mutation.isSuccess)
   const isBusy = isSubmitting || mutation.isPending
 
+  // Radio groups are focused through their first option (or the selected one).
   const focusField = (name: CreateIncidentField) => {
-    if (name === 'severity') document.getElementById(`${ids.severity}-${INCIDENT_SEVERITIES[0]}`)?.focus()
-    else form.setFocus(name)
+    if (name === 'severity' || name === 'status') {
+      const options: readonly string[] = name === 'severity' ? INCIDENT_SEVERITIES : INCIDENT_STATUSES
+      const selected = form.getValues(name)
+      document.getElementById(`${ids[name]}-${selected || options[0]}`)?.focus()
+    } else {
+      form.setFocus(name)
+    }
   }
 
-  const submit = form.handleSubmit(async (values) => {
-    if (mutation.isPending) return // second click or Enter while saving
-    setServerError(null)
-    try {
-      const incident = await mutation.mutateAsync(toCreateIncidentInput(values))
-      guard.allowNextNavigation()
-      onCreated(incident)
-    } catch (error) {
-      const fieldErrors = isApiError(error) && error.status === 400 ? error.fieldErrors : {}
-      const known = CREATE_INCIDENT_FIELDS.filter((name) => fieldErrors[name]?.length)
-      if (known.length > 0) {
-        for (const name of known) form.setError(name, { type: 'server', message: fieldErrors[name][0] })
-        focusField(known[0])
-      } else {
-        setServerError(getErrorMessage(error))
+  const submit = form.handleSubmit(
+    async (formValues) => {
+      if (mutation.isPending) return // second click or shortcut while saving
+      setServerError(null)
+      try {
+        const incident = await mutation.mutateAsync(toCreateIncidentInput(formValues))
+        guard.allowNextNavigation()
+        onCreated(incident)
+      } catch (error) {
+        const fieldErrors = isApiError(error) && error.status === 400 ? error.fieldErrors : {}
+        const known = CREATE_INCIDENT_FIELDS.filter((name) => fieldErrors[name]?.length)
+        if (known.length > 0) {
+          for (const name of known) form.setError(name, { type: 'server', message: fieldErrors[name][0] })
+          focusField(known[0])
+        } else {
+          setServerError(getErrorMessage(error))
+        }
       }
+    },
+    (fieldErrors) => {
+      // RHF focuses text inputs itself; radio groups need help.
+      const first = CREATE_INCIDENT_FIELDS.find((name) => fieldErrors[name])
+      if (first === 'severity' || first === 'status') focusField(first)
+    },
+  )
+
+  const onKeyDown = (event: KeyboardEvent<HTMLFormElement>) => {
+    if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault()
+      void submit()
     }
-  })
+  }
 
   const errorItems = CREATE_INCIDENT_FIELDS.flatMap((name) => {
     const message = errors[name]?.message
     return message ? [{ id: ids[name], message: `${FIELD_LABELS[name]}: ${message}`, onSelect: () => focusField(name) }] : []
   })
 
-  return (
-    <>
-      <form onSubmit={submit} noValidate aria-describedby={`${formId}-required`} className="flex flex-col gap-6">
-        <p id={`${formId}-required`} className="text-sm text-muted">
-          Fields marked <span className="text-danger">*</span> are required.
-        </p>
+  const assignee = users.data?.find((user) => user.id === values.assigneeId) ?? null
 
+  return (
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <form
+        id={formId}
+        onSubmit={submit}
+        onKeyDown={onKeyDown}
+        noValidate
+        aria-label="New incident"
+        className="flex min-w-0 flex-col gap-5"
+      >
         {errorItems.length > 0 && submitCount > 0 && (
           <ErrorSummary
             key={submitCount}
@@ -131,7 +152,10 @@ export function CreateIncidentForm({ onCreated }: { onCreated: (incident: Incide
           />
         )}
         {serverError && (
-          <div role="alert" className="flex items-start gap-2 rounded-md border border-red-200 bg-danger-soft p-3 text-sm text-danger">
+          <div
+            role="alert"
+            className="flex items-start gap-2 rounded-lg border border-red-200 bg-danger-soft p-3 text-sm text-danger"
+          >
             <AlertOctagonIcon size={16} className="mt-0.5 shrink-0" />
             <p>
               <span className="font-semibold">Couldn't create the incident.</span> {serverError} Your input has been
@@ -140,75 +164,66 @@ export function CreateIncidentForm({ onCreated }: { onCreated: (incident: Incide
           </div>
         )}
 
-        <Field
-          id={ids.title}
-          label="Title"
-          required
-          error={errors.title?.message}
-          hint="A short summary engineers will recognise, e.g. “Checkout latency increased”."
-          aside={<CharacterCount value={title.length} max={TITLE_MAX} />}
-        >
-          <input
-            {...form.register('title')}
-            {...fieldAria(ids.title, { error: errors.title?.message, hint: true })}
-            aria-required="true"
-            autoComplete="off"
-            className={inputClassName({ invalid: Boolean(errors.title), className: 'h-9' })}
-          />
-        </Field>
+        <FormSection step={1} title="What's happening?" description="Summarize the problem so responders can triage it at a glance.">
+          <Field
+            id={ids.title}
+            label="Title"
+            required
+            error={errors.title?.message}
+            hint="e.g. “Checkout latency increased in EU”"
+            aside={<CharacterCount value={values.title?.length ?? 0} max={TITLE_MAX} />}
+          >
+            <input
+              {...form.register('title')}
+              {...fieldAria(ids.title, { error: errors.title?.message, hint: true })}
+              aria-required="true"
+              autoComplete="off"
+              placeholder="Short, specific summary"
+              className={inputClassName({ invalid: Boolean(errors.title), className: 'h-11 text-base' })}
+            />
+          </Field>
 
-        <Field
-          id={ids.description}
-          label="Description"
-          required
-          error={errors.description?.message}
-          hint="What is happening, who is affected, and since when."
-          aside={<CharacterCount value={description.length} max={DESCRIPTION_MAX} />}
-        >
-          <textarea
-            {...form.register('description')}
-            {...fieldAria(ids.description, { error: errors.description?.message, hint: true })}
-            aria-required="true"
-            rows={5}
-            className={inputClassName({ invalid: Boolean(errors.description), className: 'resize-y py-2' })}
-          />
-        </Field>
+          <Field
+            id={ids.description}
+            label="Description"
+            required
+            error={errors.description?.message}
+            hint="What is happening, who is affected, and since when."
+            aside={<CharacterCount value={values.description?.length ?? 0} max={DESCRIPTION_MAX} />}
+          >
+            <textarea
+              {...form.register('description')}
+              {...fieldAria(ids.description, { error: errors.description?.message, hint: true })}
+              aria-required="true"
+              rows={5}
+              placeholder="Symptoms, scope of impact, first signals, links to dashboards…"
+              className={inputClassName({ invalid: Boolean(errors.description), className: 'resize-y py-2.5' })}
+            />
+          </Field>
+        </FormSection>
 
-        <fieldset aria-describedby={errors.severity ? `${ids.severity}-error` : undefined} className="flex flex-col gap-1.5">
-          <legend className="mb-1.5 text-sm font-medium text-fg">
-            Severity
-            <span aria-hidden="true" className="ml-0.5 text-danger">
-              *
-            </span>
-          </legend>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {INCIDENT_SEVERITIES.map((severity) => (
-              <label
-                key={severity}
-                className={cn(
-                  'flex cursor-pointer items-start gap-2.5 rounded-md border bg-surface p-3 has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus',
-                  errors.severity ? 'border-danger' : 'border-line-strong',
-                )}
-              >
-                <input
-                  type="radio"
-                  value={severity}
-                  {...form.register('severity')}
+        <FormSection step={2} title="Impact" description="How bad is it, and where?">
+          <fieldset aria-describedby={errors.severity ? `${ids.severity}-error` : undefined} className="flex flex-col gap-2">
+            <legend className="mb-2 text-sm font-medium text-fg">
+              Severity
+              <span aria-hidden="true" className="ml-0.5 text-danger">
+                *
+              </span>
+            </legend>
+            <div className="grid gap-2.5 sm:grid-cols-2">
+              {INCIDENT_SEVERITIES.map((severity) => (
+                <SeverityOption
+                  key={severity}
                   id={`${ids.severity}-${severity}`}
-                  aria-invalid={errors.severity ? true : undefined}
-                  className="mt-0.5 size-4 accent-[var(--color-accent)] focus:outline-none"
+                  severity={severity}
+                  invalid={Boolean(errors.severity)}
+                  {...form.register('severity')}
                 />
-                <span className="flex flex-col gap-1">
-                  <SeverityBadge severity={severity} className="self-start" />
-                  <span className="text-xs text-muted">{SEVERITY_HINTS[severity]}</span>
-                </span>
-              </label>
-            ))}
-          </div>
-          <FieldError id={`${ids.severity}-error`} message={errors.severity?.message} />
-        </fieldset>
+              ))}
+            </div>
+            <FieldError id={`${ids.severity}-error`} message={errors.severity?.message} />
+          </fieldset>
 
-        <div className="grid gap-6 sm:grid-cols-2">
           <Field
             id={ids.service}
             label="Service"
@@ -221,7 +236,7 @@ export function CreateIncidentForm({ onCreated }: { onCreated: (incident: Incide
               {...fieldAria(ids.service, { error: errors.service?.message, hint: !services.isError })}
               aria-required="true"
               disabled={services.isPending}
-              className="w-full"
+              className="w-full sm:max-w-sm"
             >
               <option value="">{services.isPending ? 'Loading services…' : 'Select a service'}</option>
               {services.data?.map((service) => (
@@ -239,28 +254,36 @@ export function CreateIncidentForm({ onCreated }: { onCreated: (incident: Incide
               </p>
             )}
           </Field>
+        </FormSection>
 
-          <Field id={ids.status} label="Initial status" required error={errors.status?.message}>
-            <Select
-              {...form.register('status')}
-              {...fieldAria(ids.status, { error: errors.status?.message })}
-              aria-required="true"
-              className="w-full"
-            >
+        <FormSection step={3} title="Response" description="Where the incident starts, and who owns it.">
+          <fieldset aria-describedby={errors.status ? `${ids.status}-error` : undefined} className="flex flex-col gap-2">
+            <legend className="mb-2 text-sm font-medium text-fg">
+              Initial status
+              <span aria-hidden="true" className="ml-0.5 text-danger">
+                *
+              </span>
+            </legend>
+            <div className="grid grid-cols-2 gap-1 rounded-lg bg-surface-muted p-1 ring-1 ring-line sm:grid-cols-4">
               {INCIDENT_STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {STATUS_LABELS[status]}
-                </option>
+                <StatusOption key={status} id={`${ids.status}-${status}`} status={status} {...form.register('status')} />
               ))}
-            </Select>
-          </Field>
+            </div>
+            <FieldError id={`${ids.status}-error`} message={errors.status?.message} />
+          </fieldset>
 
-          <Field id={ids.assigneeId} label="Assignee" optional error={errors.assigneeId?.message}>
+          <Field
+            id={ids.assigneeId}
+            label="Assignee"
+            optional
+            error={errors.assigneeId?.message}
+            hint={users.isError ? undefined : 'You can assign someone later.'}
+          >
             <Select
               {...form.register('assigneeId')}
-              {...fieldAria(ids.assigneeId, { error: errors.assigneeId?.message })}
+              {...fieldAria(ids.assigneeId, { error: errors.assigneeId?.message, hint: !users.isError })}
               disabled={users.isPending}
-              className="w-full"
+              className="w-full sm:max-w-sm"
             >
               <option value="">{users.isPending ? 'Loading users…' : 'Unassigned'}</option>
               {users.data?.map((user) => (
@@ -278,17 +301,31 @@ export function CreateIncidentForm({ onCreated }: { onCreated: (incident: Incide
               </p>
             )}
           </Field>
-        </div>
+        </FormSection>
+      </form>
 
-        <div className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
-          <Link to={paths.incidents} className={buttonClassName()}>
-            Cancel
-          </Link>
-          <Button type="submit" variant="primary" loading={isBusy}>
+      <aside aria-label="Incident preview and actions" className="flex flex-col gap-4 lg:sticky lg:top-24">
+        <IncidentPreview
+          title={values.title ?? ''}
+          severity={values.severity}
+          status={values.status}
+          service={values.service ?? ''}
+          assigneeName={assignee?.name ?? null}
+        />
+        <div className="flex flex-col gap-2">
+          <Button type="submit" form={formId} variant="primary" loading={isBusy} className="h-10 w-full">
             {isBusy ? 'Creating incident…' : 'Create incident'}
           </Button>
+          <Link to={paths.incidents} className={buttonClassName({ className: 'h-10 w-full' })}>
+            Cancel
+          </Link>
+          <p className="text-center text-xs text-subtle">
+            Press <kbd className="rounded border border-line bg-surface px-1 font-sans">Ctrl</kbd> /{' '}
+            <kbd className="rounded border border-line bg-surface px-1 font-sans">⌘</kbd> +{' '}
+            <kbd className="rounded border border-line bg-surface px-1 font-sans">Enter</kbd> to create
+          </p>
         </div>
-      </form>
+      </aside>
 
       <ConfirmDialog
         open={guard.blocker.state === 'blocked'}
@@ -301,6 +338,6 @@ export function CreateIncidentForm({ onCreated }: { onCreated: (incident: Incide
         cancelLabel="Keep editing"
         onConfirm={() => guard.blocker.state === 'blocked' && guard.blocker.proceed()}
       />
-    </>
+    </div>
   )
 }

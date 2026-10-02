@@ -43,6 +43,7 @@ export function queryIncidents(all: Incident[], query: IncidentListParams) {
       (query.status.length === 0 || query.status.includes(incident.status)) &&
       (query.severity.length === 0 || query.severity.includes(incident.severity)) &&
       (query.service.length === 0 || query.service.includes(incident.service)) &&
+      (!query.unassigned || incident.assignee === null) &&
       matchesSearch(incident, query.q),
   )
 

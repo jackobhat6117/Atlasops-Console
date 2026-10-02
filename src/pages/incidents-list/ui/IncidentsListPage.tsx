@@ -51,12 +51,15 @@ export function IncidentsListPage() {
   const announcement = data && !query.isFetching ? `${pluralize(data.total, 'incident')} found.` : ''
 
   return (
-    <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
-      <header className="flex flex-wrap items-end justify-between gap-3">
+    <div className="page-shell">
+      <header className="page-header">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-fg">Incidents</h1>
-          <p className="mt-0.5 text-muted">
-            {data ? `${pluralize(data.total, 'incident')}` : 'Monitor, triage and resolve service incidents.'}
+          <p className="eyebrow">Incident operations</p>
+          <h1 className="page-title">Incidents</h1>
+          <p className="page-description">
+            {data
+              ? `${pluralize(data.total, 'incident')} across monitored services`
+              : 'Monitor, triage and resolve service incidents.'}
           </p>
         </div>
         <Link to={paths.newIncident} className={buttonClassName({ variant: 'primary' })}>
@@ -70,9 +73,9 @@ export function IncidentsListPage() {
       <section
         ref={resultsRef}
         aria-labelledby="incident-results-heading"
-        className="scroll-mt-4 overflow-hidden rounded-lg border border-line bg-surface shadow-sm"
+        className="scroll-mt-4 overflow-hidden rounded-xl border border-line bg-surface shadow-panel"
       >
-        <div className="flex items-center justify-between gap-2 border-b border-line px-3 py-2">
+        <div className="flex items-center justify-between gap-2 border-b border-line bg-surface-muted/60 px-4 py-3">
           <h2 id="incident-results-heading" className="text-sm font-semibold text-fg">
             Results
           </h2>

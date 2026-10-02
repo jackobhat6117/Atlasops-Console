@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom'
+import { createBrowserRouter, type RouteObject } from 'react-router-dom'
 import { paths } from '@/shared/config'
 import { RootLayout } from './layouts/RootLayout'
 import { PageFallback } from './ui/PageFallback'
@@ -17,7 +17,10 @@ export const routes: RouteObject[] = [
       {
         errorElement: <RouteErrorPage />,
         children: [
-          { index: true, element: <Navigate to={paths.incidents} replace /> },
+          {
+            index: true,
+            lazy: () => import('@/pages/dashboard').then((m) => ({ Component: m.DashboardPage })),
+          },
           {
             path: paths.incidents,
             lazy: () => import('@/pages/incidents-list').then((m) => ({ Component: m.IncidentsListPage })),

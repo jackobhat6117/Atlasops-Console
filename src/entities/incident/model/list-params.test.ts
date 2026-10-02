@@ -16,6 +16,7 @@ describe('parseIncidentListParams', () => {
       status: ['triggered', 'resolved'],
       severity: ['high'],
       service: ['payments-api'],
+      unassigned: false,
       sort: 'severity',
       order: 'asc',
       page: 3,
@@ -33,6 +34,8 @@ describe('parseIncidentListParams', () => {
     })
     expect(parse('page=2.5&pageSize=5000')).toMatchObject({ page: 1, pageSize: 100 })
     expect(parse(`q=${'a'.repeat(500)}`).q).toHaveLength(200)
+    expect(parse('unassigned=1').unassigned).toBe(true)
+    expect(parse('unassigned=true').unassigned).toBe(false)
   })
 })
 

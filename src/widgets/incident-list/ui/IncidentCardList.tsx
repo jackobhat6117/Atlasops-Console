@@ -19,7 +19,7 @@ const IncidentCard = memo(function IncidentCard({
   return (
     <li
       className={cn(
-        'relative border-t border-line px-4 py-3 first:border-t-0 hover:bg-surface-muted',
+        'relative border-t border-line px-4 py-4 first:border-t-0 hover:bg-accent-soft/45',
         highlighted && 'bg-accent-soft shadow-[inset_3px_0_0_var(--color-accent)]',
       )}
     >
@@ -37,7 +37,7 @@ const IncidentCard = memo(function IncidentCard({
         data-row-link
         data-id={incident.id}
         aria-current={highlighted ? 'true' : undefined}
-        className="mt-1 block font-medium text-fg after:absolute after:inset-0 after:content-['']"
+        className="mt-1.5 block text-[15px] font-semibold text-fg after:absolute after:inset-0 after:content-['']"
       >
         {incident.title}
       </Link>

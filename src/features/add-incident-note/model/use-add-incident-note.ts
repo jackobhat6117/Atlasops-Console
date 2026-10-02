@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { dashboardKeys } from '@/entities/dashboard'
 import { addIncidentNote, incidentKeys, type Incident } from '@/entities/incident'
 import { getErrorMessage } from '@/shared/api'
 import { notify } from '@/shared/model'
@@ -26,6 +27,7 @@ export function useAddIncidentNote(incidentId: string) {
       notify.success('Note added.')
       // Background reconcile; not awaited so the mutation settles as soon as the server confirms.
       void queryClient.invalidateQueries({ queryKey: incidentKeys.all })
+      void queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     },
 
     onError: (error) => {

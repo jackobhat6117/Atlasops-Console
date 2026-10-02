@@ -144,3 +144,19 @@ export const InboxIcon = (p: IconProps) => (
     <path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.7 4H7.3a2 2 0 0 0-1.8 1.1Z" />
   </Svg>
 )
+export const DashboardIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <rect x="14" y="14" width="7" height="7" rx="1" />
+  </Svg>
+)
+export const IncidentIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 5h16M4 12h16M4 19h16" />
+    <circle cx="7" cy="5" r="1" fill="currentColor" />
+    <circle cx="7" cy="12" r="1" fill="currentColor" />
+    <circle cx="7" cy="19" r="1" fill="currentColor" />
+  </Svg>
+)

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { dashboardKeys } from '@/entities/dashboard'
 import {
   STATUS_LABELS,
   incidentKeys,
@@ -63,6 +64,7 @@ export function useChangeIncidentStatus(incidentId: string) {
 
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: incidentKeys.all })
+      void queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     },
   })
 }

@@ -16,14 +16,12 @@ A frontend for operations teams to monitor, investigate and manage service incid
 
 AtlasOps lets support engineers and technical leads:
 
-1. Review incidents quickly in a dense, readable list.
-2. Search, filter and sort incidents, with all list state kept in the URL.
-3. Inspect an incident's details and its notes timeline.
-4. Change an incident's status (optimistic update with rollback).
-5. Assign, reassign or unassign an owner.
-6. Add investigation notes.
-7. Create new incidents.
-8. Keep working gracefully when requests are slow, fail or conflict.
+1. See what needs a response from a triage dashboard: open queues, a status strip, and service posture.
+2. Review incidents quickly in a dense, readable list.
+3. Search, filter and sort incidents, with all list state kept in the URL.
+4. Inspect an incident's details and its notes timeline.
+5. Change status, manage ownership, add notes and create incidents.
+6. Keep working gracefully when requests are slow, fail or conflict.
 
 ### Tech stack
 
@@ -92,8 +90,8 @@ The code follows [Feature-Sliced Design](https://feature-sliced.design). Layers 
 ```text
 src/
   app/        App, router (lazy routes + error boundary), root layout, fallback screens
-  pages/      incidents-list, incident-detail, create-incident, not-found
-  widgets/    incident-list: table (≥768px) / cards (phones), sortable, keyboard rows
+  pages/      dashboard, incidents-list, incident-detail, create-incident, not-found
+  widgets/    dashboard overview, incident list, incident notes
   features/   user actions
     filter-incidents/        URL-synced search, filter, sort, page
     change-incident-status/  optimistic status mutation
@@ -113,7 +111,10 @@ docs/
 ```
 
 ### Component boundaries
-_TBD_
+
+Each layer has one responsibility. `shared/ui` contains domain-free controls and panels. Entity slices own business schemas, labels, API functions, query keys and small representations such as status badges. Feature slices own one user action and its mutation behavior. Widgets compose entities and features into substantial page regions: for example, `IncidentNotes` combines the entity note timeline with the add-note feature. Pages own route-level loading/error states and arrange widgets; `app` owns routing and providers.
+
+Slices expose a deliberate `index.ts` public API. ESLint prevents cross-slice deep imports and upward dependencies. The dashboard uses an aggregate endpoint and its own entity slice rather than downloading all paginated incidents or importing mock seed data into application code.
 
 ### Data-fetching strategy
 
@@ -181,7 +182,7 @@ Tailwind CSS v4 with semantic design tokens (`--color-surface`, `--color-muted`,
 
 ## 4. Important Decisions
 
-1. **MSW instead of a hosted backend.** _TBD: rationale and trade-offs._
+1. **MSW instead of a hosted backend.** The assignment needs realistic latency, failures and mutations but no private infrastructure. MSW keeps the browser, deployed demo and tests on one API contract while preserving real `fetch` behavior and cancellation. The trade-off is browser-only, reload-reset persistence and a service-worker dependency; startup failure therefore has a dedicated fallback screen.
 2. **TanStack Query for server state; Zustand only for toasts.** Nearly all "global" state here is server data (TanStack Query) or list state (the URL). The only shared client state left is the toast queue: mutation callbacks push to it outside React components, and one `aria-live` region at the root reads it. Zustand handles that in a few lines without a provider. Putting server data or filters in it would duplicate the cache and the URL.
 3. **Feature-Sliced Design.** It gives clear, enforceable boundaries: entities own data and API, features own user actions, and pages compose them. The trade-off is more folders and `index.ts` files than a small app strictly needs.
 4. **One shared list-params parser.** The UI and the mock API use the same sanitizer, so the client and the "server" can't disagree about what a URL means.
@@ -192,10 +193,10 @@ Tailwind CSS v4 with semantic design tokens (`--color-surface`, `--color-muted`,
 
 ## 5. Performance
 
-- **Dataset size:** 1,000+ seeded incidents.
-- **Issues identified:** _TBD_
-- **Optimizations implemented:** _TBD_
-- **Optimizations intentionally avoided:** _TBD_
+- **Dataset size:** 1,043 deterministic incidents. The list API only returns the requested page (25 by default); list responses omit note bodies.
+- **Issues identified:** rendering or aggregating the full dataset in React would add unnecessary work, and mounting desktop and mobile list variants together would duplicate interactive DOM. A chart library on the home page would also ship a large dependency for counts the list filters already express.
+- **Optimizations implemented:** server-side-style filtering/sorting/pagination in the mock; stable query keys and request cancellation; 30-second caching and in-flight deduplication; previous-page placeholders; memoized table rows; only one responsive list variant mounted; route-level lazy loading. The dashboard requests one compact summary and draws the status mix with CSS, so the home route does not download a chart library.
+- **Optimizations intentionally avoided:** virtualization is unnecessary for 25-row pages, and broad component memoization was avoided without measured evidence. The simple deterministic aggregation scans 1,043 in-memory records, which is inexpensive and keeps the mock explainable.
 
 ---
 
@@ -206,15 +207,15 @@ Tailwind CSS v4 with semantic design tokens (`--color-surface`, `--color-muted`,
 - **Form error handling:** every field has a visible label. Errors are linked to their field with `aria-describedby`, marked with `aria-invalid`, shown as text with an icon (not color alone), summarized in an alert after submit, and focus moves to the first invalid field. Character counters show limits.
 - **Tooling:** jest-axe in the page tests, plus manual keyboard and screen reader checks.
 - **Announcements:** result counts are announced politely once a search settles. Error toasts are announced assertively and other toasts politely. Page titles change on navigation.
-- **Known limitations:** _TBD_
+- **Known limitations:** The status strip uses color plus a text link for each status. Returning from a detail page restores list context through router state; refreshing a deep-linked detail page loses that transient return state and falls back to the default list.
 
 ---
 
 ## 7. Testing
 
-- **Covered:** _TBD_
-- **Not covered:** _TBD_
-- **Why these levels:** _TBD_
+- **Covered:** mock API contracts and failure controls; HTTP error/timeout/abort mapping; URL parsing; optimistic status success, rollback and conflict; dashboard aggregates and rendering; list search/filter/sort/pagination/keyboard behavior; detail mutation workflows and safe note rendering; create validation, server errors, duplicate-submit prevention and dialog focus; page-level axe smoke tests.
+- **Not covered:** visual regression across real browsers, service-worker registration itself, deployment routing and production monitoring. Those require browser/E2E or deployment infrastructure beyond jsdom integration tests.
+- **Why these levels:** page tests exercise the real router, TanStack Query and MSW handlers as users see them, while focused unit tests cover pure parsing and failure branches. This gives high confidence in required workflows without coupling tests to component internals.
 
 ---
 
@@ -226,14 +227,15 @@ Tailwind CSS v4 with semantic design tokens (`--color-surface`, `--color-muted`,
 - [x] Routing (lazy pages, route error boundary, 404)
 - [x] Incident details (status change, assign/unassign, notes, 404, stale/error states)
 - [x] Create incident (validation, error summary, server errors, duplicate-submit guard, unsaved-changes dialog)
-- [x] Automated tests (75 tests: unit, hook, page integration, axe)
+- [x] Triage dashboard (aggregate endpoint, queue links, status strip, attention table, service posture)
+- [x] Automated tests (unit, hook, page integration, axe)
 - [ ] Deployment
 - [ ] Real-time updates (`GET /api/incidents/events`): optional, not implemented
 - [x] API reference (`docs/API.md`)
 
 **Known bugs:** _none recorded yet._
-**Shortcuts:** _TBD_
-**What I would implement next:** _TBD_
+**Shortcuts:** data is in-memory and resets on reload; authentication, authorization and real-time events are intentionally out of scope. Dashboard trends are distribution snapshots because the supplied model has no historical time-series store.
+**What I would implement next:** deploy and verify SPA routing/service-worker behavior in a real browser, then add a small Playwright smoke suite and CI quality gates. With a real backend, persist list return state in the URL or session storage and add historical incident trends.
 
 ---
 

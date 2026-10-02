@@ -26,7 +26,10 @@ export function IncidentFilters({ isSearching = false }: { isSearching?: boolean
     .map((value) => ({ value, label: value }))
 
   return (
-    <div className="flex flex-col gap-3">
+    <section
+      aria-label="Incident search and filters"
+      className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 shadow-panel"
+    >
       <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           <IncidentSearch value={list.params.q} onSearch={list.setSearch} isSearching={isSearching} />
@@ -62,8 +65,9 @@ export function IncidentFilters({ isSearching = false }: { isSearching?: boolean
         params={list.params}
         onRemoveSearch={() => list.setSearch('')}
         onRemoveFilter={list.clearFilter}
+        onClearUnassigned={list.clearUnassigned}
         onClearAll={list.clearAll}
       />
-    </div>
+    </section>
   )
 }

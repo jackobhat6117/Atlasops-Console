@@ -65,7 +65,9 @@ export function useIncidentListParams() {
           return { [key]: next } as Partial<IncidentListParams>
         }),
 
-      clearAll: () => update({ q: '', status: [], severity: [], service: [] }),
+      clearUnassigned: () => update({ unassigned: false }),
+
+      clearAll: () => update({ q: '', status: [], severity: [], service: [], unassigned: false }),
 
       setSort: (sort: SortField, order: SortOrder) => update({ sort, order }),
 

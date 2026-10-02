@@ -46,7 +46,7 @@ function SortableHeader({
         // New column: most relevant first (newest / most severe). Same column: flip direction.
         onClick={() => onSortChange(field, active && order === 'desc' ? 'asc' : 'desc')}
         className={cn(
-          '-mx-1 inline-flex items-center gap-1 rounded px-1 font-semibold hover:text-fg',
+          '-mx-1 inline-flex items-center gap-1 rounded px-1 font-semibold tracking-[inherit] uppercase hover:text-fg',
           active ? 'text-fg' : 'text-muted',
         )}
       >
@@ -69,12 +69,12 @@ const IncidentRow = memo(function IncidentRow({ incident, highlighted, linkState
     <tr
       onClick={(event) => onRowClick(event, incident)}
       className={cn(
-        'cursor-pointer border-t border-line align-top hover:bg-surface-muted',
+        'cursor-pointer border-t border-line align-top transition-colors hover:bg-accent-soft/45',
         highlighted && 'bg-accent-soft shadow-[inset_3px_0_0_var(--color-accent)]',
       )}
     >
-      <td className="px-3 py-2.5 font-mono text-xs whitespace-nowrap text-muted">{incident.id}</td>
-      <td className="max-w-0 px-3 py-2.5">
+      <td className="px-4 py-3.5 font-mono text-xs whitespace-nowrap text-muted">{incident.id}</td>
+      <td className="max-w-0 px-3 py-3.5">
         <Link
           to={paths.incident(incident.id)}
           state={{ ...linkState, lastViewedId: incident.id } satisfies IncidentListReturnState}
@@ -88,22 +88,22 @@ const IncidentRow = memo(function IncidentRow({ incident, highlighted, linkState
         {highlighted && <LastViewedTag />}
         <span className="mt-0.5 block truncate text-xs text-muted lg:hidden">{incident.service}</span>
       </td>
-      <td className="px-3 py-2.5">
+      <td className="px-3 py-3.5">
         <SeverityBadge severity={incident.severity} />
       </td>
-      <td className="px-3 py-2.5">
+      <td className="px-3 py-3.5">
         <StatusBadge status={incident.status} />
       </td>
-      <td className="hidden px-3 py-2.5 whitespace-nowrap text-muted lg:table-cell">{incident.service}</td>
-      <td className="truncate px-3 py-2.5">
+      <td className="hidden px-3 py-3.5 whitespace-nowrap text-muted lg:table-cell">{incident.service}</td>
+      <td className="truncate px-3 py-3.5">
         {incident.assignee ? incident.assignee.name : <span className="text-subtle italic">Unassigned</span>}
       </td>
-      <td className="hidden px-3 py-2.5 whitespace-nowrap text-muted xl:table-cell">
+      <td className="hidden px-3 py-3.5 whitespace-nowrap text-muted xl:table-cell">
         <time dateTime={incident.createdAt} title={formatDateTime(incident.createdAt)}>
           {formatRelativeTime(incident.createdAt)}
         </time>
       </td>
-      <td className="px-3 py-2.5 whitespace-nowrap text-muted">
+      <td className="px-4 py-3.5 whitespace-nowrap text-muted">
         <time dateTime={incident.updatedAt} title={formatDateTime(incident.updatedAt)}>
           {formatRelativeTime(incident.updatedAt)}
         </time>
@@ -150,7 +150,7 @@ export function IncidentTable({
           Incidents, sorted by {SORT_LABELS[sort].toLowerCase()},{' '}
           {order === 'desc' ? 'descending' : 'ascending'}. Use arrow keys to move between incidents.
         </caption>
-        <thead className="bg-surface-muted text-xs">
+        <thead className="bg-surface-muted/80 text-[11px] tracking-wide uppercase">
           <tr>
             <th scope="col" className="w-24 px-3 py-2 font-semibold text-muted">
               ID

@@ -27,7 +27,7 @@ export function IncidentDetailPage() {
   }, [incident])
 
   return (
-    <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-4 px-4 py-6 sm:px-6 lg:px-8">
+    <div className="page-shell">
       <BackToIncidentsLink incidentId={incidentId} />
 
       {query.isPending ? (
@@ -68,31 +68,29 @@ export function IncidentDetailPage() {
             </Banner>
           )}
 
-          <header className="flex flex-col gap-2">
-            <p className="font-mono text-xs text-muted">{incident.id}</p>
-            <h1
-              ref={headingRef}
-              tabIndex={-1}
-              className="text-xl font-semibold tracking-tight break-words text-fg outline-none sm:text-2xl"
-            >
-              {incident.title}
-            </h1>
-            <div className="flex flex-wrap items-center gap-3 text-sm">
-              <SeverityBadge severity={incident.severity} />
-              <StatusBadge status={incident.status} />
-              <span className="text-muted">{incident.service}</span>
+          <header className="page-header">
+            <div>
+              <p className="eyebrow font-mono">{incident.id}</p>
+              <h1 ref={headingRef} tabIndex={-1} className="page-title break-words outline-none">
+                {incident.title}
+              </h1>
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+                <SeverityBadge severity={incident.severity} />
+                <StatusBadge status={incident.status} />
+                <span className="rounded-md bg-surface-muted px-2 py-0.5 text-muted">{incident.service}</span>
+              </div>
             </div>
           </header>
 
           {/* DOM order puts actions before content on phones; on desktop they sit in the right column. */}
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
             <div className="lg:col-start-2 lg:row-start-1">
               <IncidentProperties incident={incident} />
             </div>
             <div className="flex min-w-0 flex-col gap-6 lg:col-start-1 lg:row-start-1">
               <section
                 aria-labelledby="incident-description-heading"
-                className="rounded-lg border border-line bg-surface p-4 shadow-sm"
+                className="rounded-xl border border-line bg-surface p-5 shadow-panel"
               >
                 <h2 id="incident-description-heading" className="text-sm font-semibold text-fg">
                   Description

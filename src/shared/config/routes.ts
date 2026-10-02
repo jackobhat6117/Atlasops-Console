@@ -1,6 +1,7 @@
 /** Single registry of app URLs, so paths are never hard-coded across the codebase. */
 export const paths = {
   root: '/',
+  dashboard: '/',
   incidents: '/incidents',
   newIncident: '/incidents/new',
   incident: (id: string) => `/incidents/${encodeURIComponent(id)}`,

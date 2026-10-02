@@ -90,7 +90,7 @@ src/
 - `setViewportWidth(375)` (`src/test/browser-polyfills.ts`) simulates phones for `useMediaQuery`. It resets before each test.
 - The polyfills cover `matchMedia`, `scrollIntoView`, pointer capture, `ResizeObserver` and `CSS.escape`, all of which Radix needs in jsdom.
 - Accessibility smoke test: `const results = await axe(container); expect(results.violations).toEqual([])`.
-- The built-in Claude browser pane can't register service workers, so the app shows the API-unavailable screen there. Verify the UI in real Chrome.
+- The mock API prefers the MSW service worker and falls back to an in-page `fetch` patch (`startMockApi` in `src/mocks/browser.ts`) where service workers are blocked, such as the built-in Claude browser pane or some private modes. The UI can be verified in the built-in pane.
 
 ## Submission constraints
 
