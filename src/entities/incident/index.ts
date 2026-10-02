@@ -4,6 +4,7 @@ export {
   SEVERITY_LABELS,
   SEVERITY_RANK,
   STATUS_TRANSITIONS,
+  getTransitionLabel,
 } from './model/status'
 export {
   SORT_FIELDS,
@@ -35,3 +36,4 @@ export {
 } from './api/cache'
 export { SeverityBadge } from './ui/SeverityBadge'
 export { StatusBadge } from './ui/StatusBadge'
+export { NoteList } from './ui/NoteList'

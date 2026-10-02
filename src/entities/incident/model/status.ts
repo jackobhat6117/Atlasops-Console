@@ -33,3 +33,10 @@ export const STATUS_TRANSITIONS: Record<IncidentStatus, readonly IncidentStatus[
   investigating: ['resolved'],
   resolved: ['investigating'],
 }
+
+/** Verb for a status transition button, e.g. "Acknowledge" or "Reopen". */
+export function getTransitionLabel(from: IncidentStatus, to: IncidentStatus): string {
+  if (to === 'acknowledged') return 'Acknowledge'
+  if (to === 'resolved') return 'Resolve'
+  return from === 'resolved' ? 'Reopen' : 'Start investigating'
+}
