@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  incidentActivityListSchema,
   incidentListResponseSchema,
   incidentNoteSchema,
   incidentSchema,
@@ -266,5 +267,71 @@ describe('failure simulation', () => {
     const { status, body } = await send('/incidents')
     expect(status).toBe(500)
     expect(body.code).toBe('INTERNAL_ERROR')
+  })
+})
+
+describe('GET /api/incidents/:id/activity', () => {
+  async function activity(id: string) {
+    const { status, body } = await send(`/incidents/${id}/activity`)
+    expect(status).toBe(200)
+    return incidentActivityListSchema.parse(body).items
+  }
+
+  it('returns a seeded history, newest first, that starts with creation', async () => {
+    const items = await activity('INC-1042')
+    expect(items.at(-1)?.type).toBe('created')
+    const dates = items.map((item) => item.createdAt)
+    expect(dates).toEqual([...dates].sort().reverse())
+  })
+
+  it('has a seeded status path that ends at the current status, and one entry per note', async () => {
+    for (const id of ['INC-1001', 'INC-1042', 'INC-1500', 'INC-2043']) {
+      const incident = await getIncident(id)
+      const items = await activity(id)
+      const statusChanges = items.filter((item) => item.type === 'status_changed')
+      expect(statusChanges[0]?.type === 'status_changed' ? statusChanges[0].to : 'triggered').toBe(incident.status)
+      expect(items.filter((item) => item.type === 'note_added')).toHaveLength(incident.notes.length)
+    }
+  })
+
+  it('records status, assignment and note changes by the current user', async () => {
+    const before = await getIncident('INC-1042')
+    const next = before.status === 'resolved' ? 'investigating' : 'resolved'
+    await send('/incidents/INC-1042/status', { method: 'PATCH', body: JSON.stringify({ status: next }) })
+    await send('/incidents/INC-1042/assignee', { method: 'PATCH', body: JSON.stringify({ assigneeId: 'usr-18' }) })
+    await send('/incidents/INC-1042/notes', { method: 'POST', body: JSON.stringify({ message: 'Rolled back.' }) })
+
+    const [note, assignment, status] = await activity('INC-1042')
+    expect(note).toMatchObject({ type: 'note_added', excerpt: 'Rolled back.', actor: { id: 'usr-current' } })
+    expect(assignment).toMatchObject({ type: 'assignee_changed', to: { id: 'usr-18' } })
+    expect(status).toMatchObject({ type: 'status_changed', from: before.status, to: next })
+  })
+
+  it('does not record no-op changes', async () => {
+    const before = await activity('INC-1042')
+    const incident = await getIncident('INC-1042')
+    await send('/incidents/INC-1042/status', { method: 'PATCH', body: JSON.stringify({ status: incident.status }) })
+    expect(await activity('INC-1042')).toHaveLength(before.length)
+  })
+
+  it('records creation, including the initial assignee', async () => {
+    const { body } = await send('/incidents', {
+      method: 'POST',
+      body: JSON.stringify({
+        title: 'Checkout latency increased',
+        description: 'The 95th percentile latency has exceeded the alert threshold.',
+        status: 'investigating',
+        severity: 'high',
+        service: 'checkout-web',
+        assigneeId: 'usr-12',
+      }),
+    })
+    expect(await activity(body.id)).toEqual([
+      expect.objectContaining({ type: 'created', status: 'investigating', assignee: expect.objectContaining({ id: 'usr-12' }) }),
+    ])
+  })
+
+  it('returns 404 for unknown incidents', async () => {
+    expect((await send('/incidents/INC-0/activity')).status).toBe(404)
   })
 })

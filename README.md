@@ -19,7 +19,7 @@ AtlasOps lets support engineers and technical leads:
 1. See what needs a response from a triage dashboard: open queues, a status strip, and service posture.
 2. Review incidents quickly in a dense, readable list.
 3. Search, filter and sort incidents, with all list state kept in the URL.
-4. Inspect an incident's details and its notes timeline.
+4. Inspect an incident's details, its notes timeline and its activity log (who changed what, and when).
 5. Change status, manage ownership, add notes and create incidents.
 6. Keep working gracefully when requests are slow, fail or conflict.
 
@@ -73,7 +73,7 @@ No secrets are needed. The app runs entirely against the in-browser mock API.
 |---|---|---|
 | `VITE_MOCK_FAILURE_RATE` | `0.05` | Probability (0–1) that a mock API request fails with a 500. Set to `0` for a failure-free demo. |
 
-Copy a variable into `.env.local` to override it locally. `.env*` files are gitignored.
+To override locally, copy the template: `cp .env.example .env.local`. All `.env*` files except `.env.example` are gitignored. Vite reads variables at build time, so restart the dev server or rebuild after changing them.
 
 ### Mock API
 
@@ -188,6 +188,7 @@ Tailwind CSS v4 with semantic design tokens (`--color-surface`, `--color-muted`,
 4. **One shared list-params parser.** The UI and the mock API use the same sanitizer, so the client and the "server" can't disagree about what a URL means.
 5. **Table on desktop, cards on phones.** A real `<table>` gives the densest readable layout, along with native header and cell semantics and `aria-sort`. Below 768px it would need horizontal scrolling, so phones get a card list instead. Only one layout is mounted (`useMediaQuery`), not both with one hidden by CSS, so the DOM and accessibility tree never contain duplicate rows.
 6. **Optimistic status, pessimistic everything else.** The status change is optimistic: it patches the detail and every cached list page, rolls back on error, and sends `version` so concurrent edits return 409 instead of silently overwriting. Assign, note and create wait for the server. Assignment depends on server-side user validation, and a note must never look saved when it wasn't.
+7. **Server-recorded activity log.** The audit history is written by the API on every mutation, not assembled on the client, so it is consistent across tabs and users, the way a real audit trail must be. It is a separate endpoint (`/incidents/:id/activity`), so the incident payload stays small, and its query key is nested under the incident's detail key, so the existing invalidations refresh it after every change. Entries are a Zod discriminated union: each type (`created`, `status_changed`, `assignee_changed`, `note_added`) carries exactly the data it needs.
 
 ---
 
@@ -226,6 +227,7 @@ Tailwind CSS v4 with semantic design tokens (`--color-surface`, `--color-muted`,
 - [x] Incident list (search, filters, sort, pagination, URL state, all list states, keyboard rows, responsive)
 - [x] Routing (lazy pages, route error boundary, 404)
 - [x] Incident details (status change, assign/unassign, notes, 404, stale/error states)
+- [x] Activity log / audit history (optional enhancement): server-recorded, filterable, refreshes after every change
 - [x] Create incident (validation, error summary, server errors, duplicate-submit guard, unsaved-changes dialog)
 - [x] Triage dashboard (aggregate endpoint, queue links, status strip, attention table, service posture)
 - [x] Automated tests (unit, hook, page integration, axe)

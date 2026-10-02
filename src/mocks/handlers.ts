@@ -12,9 +12,18 @@ import {
   type IncidentNote,
 } from '@/entities/incident'
 import { mockConfig } from './config'
-import { findIncident, getAllIncidents, nextIncidentId, nextNoteId, saveIncident } from './db'
+import {
+  findIncident,
+  getAllIncidents,
+  getIncidentActivity,
+  nextIncidentId,
+  nextNoteId,
+  recordActivity,
+  saveIncident,
+} from './db'
 import { queryIncidents } from './query'
 import { CURRENT_USER, SERVICES, USERS } from './seed'
+import { excerpt } from './seed-activity'
 
 // MSW request handlers implementing the contract in docs/API.md.
 
@@ -160,6 +169,13 @@ export const handlers = [
     return incident ? HttpResponse.json(sortedNotes(incident)) : notFound()
   }),
 
+  http.get('/api/incidents/:incidentId/activity', async ({ request, params }) => {
+    const simulated = await simulateNetwork(request)
+    if (simulated) return simulated
+    const incident = findIncident(String(params.incidentId))
+    return incident ? HttpResponse.json({ items: getIncidentActivity(incident.id) }) : notFound()
+  }),
+
   http.post('/api/incidents', async ({ request }) => {
     const simulated = await simulateNetwork(request)
     if (simulated) return simulated
@@ -195,6 +211,16 @@ export const handlers = [
       version: 1,
     }
     saveIncident(incident)
+    recordActivity({
+      type: 'created',
+      incidentId: incident.id,
+      actor: CURRENT_USER,
+      createdAt: now,
+      severity: incident.severity,
+      status: incident.status,
+      service: incident.service,
+      assignee,
+    })
     return HttpResponse.json(incident, { status: 201 })
   }),
 
@@ -219,6 +245,16 @@ export const handlers = [
     }
 
     const updated = touch(incident, { status: parsed.data.status })
+    if (incident.status !== updated.status) {
+      recordActivity({
+        type: 'status_changed',
+        incidentId: incident.id,
+        actor: CURRENT_USER,
+        createdAt: updated.updatedAt,
+        from: incident.status,
+        to: updated.status,
+      })
+    }
     return HttpResponse.json({
       id: updated.id,
       status: updated.status,
@@ -243,7 +279,18 @@ export const handlers = [
       return validationError({ assigneeId: ['Unknown user.'] }, 'The assignment is invalid.')
     }
 
-    return HttpResponse.json(sortedNotes(touch(incident, { assignee })))
+    const updated = touch(incident, { assignee })
+    if (incident.assignee?.id !== assignee?.id) {
+      recordActivity({
+        type: 'assignee_changed',
+        incidentId: incident.id,
+        actor: CURRENT_USER,
+        createdAt: updated.updatedAt,
+        from: incident.assignee,
+        to: assignee,
+      })
+    }
+    return HttpResponse.json(sortedNotes(updated))
   }),
 
   http.post('/api/incidents/:incidentId/notes', async ({ request, params }) => {
@@ -265,6 +312,14 @@ export const handlers = [
       createdAt: new Date().toISOString(),
     }
     touch(incident, { notes: [...incident.notes, note] })
+    recordActivity({
+      type: 'note_added',
+      incidentId: incident.id,
+      actor: CURRENT_USER,
+      createdAt: note.createdAt,
+      noteId: note.id,
+      excerpt: excerpt(note.message),
+    })
     return HttpResponse.json(note, { status: 201 })
   }),
 

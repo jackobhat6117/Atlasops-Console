@@ -104,6 +104,21 @@ Body: `{ "assigneeId": "usr-12" }` to assign, or `{ "assigneeId": null }` to una
 
 Body: `{ "message": "Restarted the worker pool." }`. The message is trimmed and must be 1–2,000 characters, so empty or whitespace-only notes return `400`. The author is the current user. Returns `201` with the note, which is appended to the end of the incident's notes.
 
+### `GET /api/incidents/:incidentId/activity`
+
+Audit history for one incident, **newest first**: `{ "items": IncidentActivity[] }`. Returns `404` for an unknown incident.
+
+Every mutation appends an entry, recorded by the server with the current user as the actor. No-op changes (same status, same assignee) are not recorded. Seeded incidents come with a plausible, deterministic history derived from their current state.
+
+| `type` | Extra fields |
+|---|---|
+| `created` | `severity`, `status`, `service`, `assignee` (or `null`) |
+| `status_changed` | `from`, `to` (statuses) |
+| `assignee_changed` | `from`, `to` (users or `null`) |
+| `note_added` | `noteId`, `excerpt` (first 140 characters) |
+
+All entries also have `id`, `incidentId`, `actor` (user) and `createdAt`.
+
 ### `GET /api/users`
 
 `{ "items": UserSummary[] }`

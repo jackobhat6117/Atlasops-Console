@@ -27,6 +27,7 @@ export function useAssignIncident(incidentId: string) {
       )
       // Background reconcile; not awaited so the mutation settles as soon as the server confirms.
       void queryClient.invalidateQueries({ queryKey: incidentKeys.lists() })
+      void queryClient.invalidateQueries({ queryKey: incidentKeys.activity(incidentId) })
       void queryClient.invalidateQueries({ queryKey: dashboardKeys.all })
     },
 

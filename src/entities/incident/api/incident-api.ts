@@ -1,4 +1,5 @@
 import { request } from '@/shared/api'
+import { incidentActivityListSchema } from '../model/activity'
 import { serializeIncidentListParams, type IncidentListParams } from '../model/list-params'
 import {
   incidentListResponseSchema,
@@ -47,4 +48,12 @@ export function addIncidentNote(id: string, message: string) {
     body: { message },
     schema: incidentNoteSchema,
   })
+}
+
+export async function fetchIncidentActivity(id: string, signal?: AbortSignal) {
+  const response = await request(`/incidents/${encodeURIComponent(id)}/activity`, {
+    schema: incidentActivityListSchema,
+    signal,
+  })
+  return response.items
 }

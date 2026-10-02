@@ -40,7 +40,7 @@ src/
  ui/ (error, fallback screens)
   pages/      incidents-list, incident-detail (+ IncidentProperties sidebar), create-incident, not-found
   widgets/    incident-list (table on ≥768px / cards on phones, sortable headers, arrow-key rows),
-              incident-notes (NoteList timeline + AddNoteForm)
+              incident-notes (NoteList timeline + AddNoteForm), incident-activity (filterable audit log)
   features/   one slice per user action:
               filter-incidents (URL state hook + toolbar UI), change-incident-status (StatusControl, optimistic),
               assign-incident (AssigneeSelect), add-incident-note (AddNoteForm), create-incident (CreateIncidentForm)
@@ -67,6 +67,7 @@ src/
 - **State ownership:** server data lives only in TanStack Query. List search, filters, sort and page live only in the URL (`useIncidentListParams`). Form state lives in React Hook Form, and local UI state in `useState`. **Zustand is only for the toast/announcement queue** (`shared/model/toast-store.ts`, pushed via `notify.*` from mutation callbacks). Never put server data or list filters in Zustand.
 - **HTTP:** `request()` validates every response with a schema and turns all failures into an `ApiError` with `kind` set to `http`, `network`, `timeout`, `aborted` or `invalid-response`. Show users only `getErrorMessage(error)`, which is client-written text; never show server messages. It has a 10s timeout and supports a caller `signal`.
 - **Caching:** queries are fresh for 30s. Only `isRetryable` errors (network, timeout, 5xx) are retried, up to 2 times, and mutations never retry. Query keys are hierarchical (`incidentKeys`), so invalidate `incidentKeys.lists()` or `incidentKeys.all`. `useIncidentList` uses `keepPreviousData`, and the query signal is passed through so stale searches are cancelled.
+- **Activity log:** the server records it: every mock mutation calls `recordActivity` in `src/mocks/db.ts`, and seeded history comes from `src/mocks/seed-activity.ts`. `incidentKeys.activity(id)` is nested under `detail(id)`. Any new mutation must record an entry in its handler and invalidate the activity key (or the detail key).
 - **Mutations:** status change is optimistic: cancel queries, snapshot, patch detail and lists via `patchIncidentInCache`, roll back on error, invalidate when settled. It sends `version`, and 409 gets its own message. Assign, note and create are pessimistic. Per-incident mutations share `scope: { id: 'incident:<id>' }`, so they run one at a time. Don't await `invalidateQueries` inside mutation callbacks, or `isPending` stays true during the refetch. The note form must use `mutateAsync` and clear only after it succeeds.
 - **URL hook gotcha:** React Router's functional `setSearchParams` sees the URL of the current render. Call one list action per event.
 - **Navigation:** the detail page must return to the exact list URL. Carry the `search` value from `useIncidentListParams` through to the detail link.

@@ -4,6 +4,7 @@ import { SeverityBadge, StatusBadge, useIncident } from '@/entities/incident'
 import { getErrorMessage, isApiError } from '@/shared/api'
 import { formatDateTime, useDocumentTitle } from '@/shared/lib'
 import { AlertOctagonIcon, Banner, Button, RefreshIcon, SearchIcon, StateMessage } from '@/shared/ui'
+import { IncidentActivity } from '@/widgets/incident-activity'
 import { IncidentNotes } from '@/widgets/incident-notes'
 import { BackToIncidentsLink } from './BackToIncidentsLink'
 import { IncidentDetailSkeleton } from './IncidentDetailSkeleton'
@@ -98,6 +99,7 @@ export function IncidentDetailPage() {
                 <p className="mt-2 break-words whitespace-pre-wrap text-fg">{incident.description}</p>
               </section>
               <IncidentNotes incident={incident} />
+              <IncidentActivity incidentId={incident.id} />
             </div>
           </div>
         </>

@@ -25,9 +25,10 @@ export {
   updateIncidentStatus,
   assignIncident,
   addIncidentNote,
+  fetchIncidentActivity,
 } from './api/incident-api'
 export { incidentKeys } from './api/query-keys'
-export { useIncidentList, useIncident } from './api/queries'
+export { useIncidentList, useIncident, useIncidentActivity } from './api/queries'
 export {
   snapshotIncidentCache,
   restoreIncidentCache,
@@ -37,3 +38,5 @@ export {
 export { SeverityBadge } from './ui/SeverityBadge'
 export { StatusBadge } from './ui/StatusBadge'
 export { NoteList } from './ui/NoteList'
+export * from './model/activity'
+export { ActivityTimeline } from './ui/ActivityTimeline'

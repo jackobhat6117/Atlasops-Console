@@ -142,6 +142,63 @@ describe('Incident detail page', () => {
     expect(container.querySelector('b')).toBeNull()
   })
 
+  describe('activity log', () => {
+    const activity = () => screen.getByRole('region', { name: /^Activity/ })
+    const entries = async () => within(await within(activity()).findByRole('list', { name: 'Activity' })).getAllByRole('listitem')
+
+    it('shows the seeded history, newest first, ending with creation', async () => {
+      await openIncident()
+      const items = await entries()
+      expect(items.at(-1)).toHaveTextContent('created the incident')
+    })
+
+    it('records a status change made on this page as the newest entry', async () => {
+      const { user, incident } = await openIncident()
+      await entries()
+      const action = within(statusActions()).getAllByRole('button')[0]
+
+      await user.click(action)
+
+      await waitFor(async () => expect((await entries())[0]).toHaveTextContent(/Current User changed status from/))
+      expect((await entries())[0]).toHaveTextContent(new RegExp(`from ${incident.status}`, 'i'))
+    })
+
+    it('records reassignment and notes', async () => {
+      const { user } = await openIncident()
+      const select = within(properties()).getByLabelText('Assignee')
+      await within(select).findByRole('option', { name: 'Omar Hassan' })
+
+      await user.selectOptions(select, 'Omar Hassan')
+      await waitFor(async () => expect((await entries())[0]).toHaveTextContent(/Current User (assigned|reassigned).*Omar Hassan/))
+
+      await user.type(screen.getByRole('textbox', { name: 'Add a note' }), 'Escalated to the payments team.')
+      await user.click(screen.getByRole('button', { name: 'Add note' }))
+      await waitFor(async () => expect((await entries())[0]).toHaveTextContent('Current User added a note'))
+      expect((await entries())[0]).toHaveTextContent('Escalated to the payments team.')
+    })
+
+    it('filters by entry type with toggle buttons', async () => {
+      const { user } = await openIncident()
+      await entries()
+      const filters = within(activity()).getByRole('group', { name: 'Filter activity' })
+
+      await user.click(within(filters).getByRole('button', { name: /^Status/ }))
+
+      expect(within(filters).getByRole('button', { name: /^Status/ })).toHaveAttribute('aria-pressed', 'true')
+      const items = within(activity()).queryAllByRole('listitem')
+      for (const item of items) expect(item).toHaveTextContent('changed status')
+      if (items.length === 0) expect(within(activity()).getByText('No status changes yet.')).toBeInTheDocument()
+    })
+
+    it('keeps the rest of the page usable when the activity log fails to load', async () => {
+      server.use(http.get('*/api/incidents/:id/activity', () => HttpResponse.json({}, { status: 500 })))
+      const { incident } = await openIncident()
+      expect(await within(activity()).findByText(/Couldn't load the activity log/)).toBeInTheDocument()
+      expect(screen.getByText(incident.description)).toBeInTheDocument()
+      expect(within(activity()).getByRole('button', { name: 'Retry' })).toBeInTheDocument()
+    })
+  })
+
   it('shows a not-found state for an unknown incident', async () => {
     renderApp('/incidents/INC-0')
     expect(await screen.findByText('Incident not found')).toBeInTheDocument()
