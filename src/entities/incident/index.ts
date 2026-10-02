@@ -33,3 +33,5 @@ export {
   patchIncidentInCache,
   type IncidentCacheSnapshot,
 } from './api/cache'
+export { SeverityBadge } from './ui/SeverityBadge'
+export { StatusBadge } from './ui/StatusBadge'
