@@ -2,6 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
+import { simulateTeammateActivity } from '@/mocks/live-activity'
 import { server } from '@/mocks/node'
 import { setViewportWidth } from '@/test/browser-polyfills'
 import { renderApp } from '@/test/render-app'
@@ -171,6 +172,26 @@ describe('Incident list page', () => {
     const cards = await screen.findByRole('list', { name: 'Incidents' })
     expect(within(cards).getAllByRole('listitem')).toHaveLength(25)
     expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  })
+
+  it('tells the user when someone else changed the view, and refreshes on request', async () => {
+    const { user, queryClient } = renderApp()
+    const table = await findTable()
+    const firstPage = getDataRows(table).map((row) => row.textContent)
+    expect(screen.queryByText(/changed since you loaded it/)).not.toBeInTheDocument()
+
+    // A teammate edits an incident after the list was loaded; the next poll notices.
+    await new Promise((resolve) => setTimeout(resolve, 5))
+    simulateTeammateActivity()
+    await queryClient.invalidateQueries({ queryKey: ['incident-changes'] })
+
+    const notice = await screen.findByText('1 incident in this view has changed since you loaded it.')
+    // The rows themselves must not move until the user asks.
+    expect(getDataRows(screen.getByRole('table')).map((row) => row.textContent)).toEqual(firstPage)
+
+    await user.click(within(notice.closest('[role="status"]') as HTMLElement).getByRole('button', { name: 'Refresh' }))
+
+    await waitFor(() => expect(screen.queryByText(/changed since you loaded it/)).not.toBeInTheDocument())
   })
 
   it('has no detectable accessibility violations', async () => {

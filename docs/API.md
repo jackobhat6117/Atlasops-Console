@@ -21,6 +21,7 @@ Base URL: `/api`
 | Random failures | 5% of requests return `500 INTERNAL_ERROR` (configurable with `VITE_MOCK_FAILURE_RATE`). |
 | Tests | Latency and random failures are disabled, and the data is reset before each test. |
 | Current user | Simulated as `usr-current` (Current User). Authentication is out of scope. |
+| Simulated teammates | In the browser only, every ~20 s a random teammate assigns, advances or comments on a random open incident (`src/mocks/live-activity.ts`). It uses the same write path as the handlers, so versions, timestamps and the audit log stay consistent, and a status change you make on an incident they just edited gets a real `409`. Disable with `VITE_MOCK_LIVE_UPDATES=false`. Never runs in tests. |
 
 ### Error shape
 
@@ -61,6 +62,18 @@ Invalid values are ignored or clamped rather than rejected, so a hand-edited URL
 Sorting always tie-breaks on the incident number, so the order is total. A record can never show up on two pages or be skipped.
 
 Response: `{ items, page, pageSize, total, totalPages }`. **List items always have `notes: []`** to keep the payload small. Fetch the detail endpoint for notes.
+
+### `GET /api/incidents/changes`
+
+A cheap poll for the "has anything changed?" notice on the list. Not part of the supplied brief: it is the polling alternative to the optional `/api/incidents/events` stream.
+
+Query: `since` (required, ISO 8601), plus the same filters as the list (`status`, `severity`, `service`, `unassigned`, `q`). Paging and sort are ignored.
+
+```json
+{ "count": 3 }
+```
+
+`count` is the number of incidents matching the filters that were created or updated **after** `since`, so it describes exactly the view the user is looking at. A missing or malformed `since` returns `400 VALIDATION_ERROR` with `fieldErrors.since`.
 
 ### `GET /api/incidents/:incidentId`
 
@@ -141,7 +154,7 @@ The summary is computed from the same in-memory incident database, so mutations 
 
 ### `GET /api/incidents/events`
 
-Not implemented. This is the optional real-time endpoint.
+Not implemented. Real-time updates use polling instead: `GET /api/incidents/changes` (list, every 15 s) and a periodic refetch of `GET /api/dashboard/summary` (every 30 s). Both pause in background tabs and while offline. A server-sent-events stream would need a streaming transport, which the in-page `fetch` fallback cannot provide.
 
 ## Development-only controls
 

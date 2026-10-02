@@ -14,7 +14,7 @@ export interface ErrorSummaryItem {
 export function ErrorSummary({ title, items }: { title: string; items: ErrorSummaryItem[] }) {
   if (items.length === 0) return null
   return (
-    <div role="alert" className="rounded-md border border-red-200 bg-danger-soft p-3 text-sm">
+    <div role="alert" className="rounded-md border border-danger-line bg-danger-soft p-3 text-sm">
       <p className="flex items-center gap-1.5 font-semibold text-danger">
         <AlertOctagonIcon size={16} />
         {title}

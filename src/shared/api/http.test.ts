@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import { z } from 'zod'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { server } from '@/mocks/node'
 import { ApiError, getErrorMessage } from './api-error'
 import { request } from './http'
@@ -14,6 +14,22 @@ async function captureError(promise: Promise<unknown>): Promise<ApiError> {
 }
 
 describe('request()', () => {
+  afterEach(() => vi.restoreAllMocks())
+
+  it('rejects writes immediately while offline, but still allows reads', async () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+
+    const error = await captureError(
+      request('/incidents', { method: 'POST', body: { title: 'x' }, schema: anything }),
+    )
+    expect(error.kind).toBe('network')
+    expect(fetchSpy).not.toHaveBeenCalled()
+
+    // Reads are paused by TanStack Query offline, so `request` itself doesn't block them.
+    await expect(request('/services', { schema: anything })).resolves.toBeDefined()
+  })
+
   it('returns schema-validated data', async () => {
     const data = await request('/services', { schema: z.object({ items: z.array(z.string()) }) })
     expect(data.items).toContain('payments-api')

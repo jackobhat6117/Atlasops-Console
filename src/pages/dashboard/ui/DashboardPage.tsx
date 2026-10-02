@@ -7,6 +7,7 @@ import {
   AlertOctagonIcon,
   Banner,
   Button,
+  OfflineMessage,
   PlusIcon,
   RefreshIcon,
   StateMessage,
@@ -24,7 +25,7 @@ function DashboardSkeleton() {
         ))}
       </div>
       <div className="h-24 rounded-xl border border-line bg-surface" />
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.6fr)_22rem]">
+      <div className="grid gap-5 2xl:grid-cols-[minmax(0,1.6fr)_22rem]">
         <div className="h-80 rounded-xl border border-line bg-surface" />
         <div className="h-80 rounded-xl border border-line bg-surface" />
       </div>
@@ -72,7 +73,11 @@ export function DashboardPage() {
       )}
 
       {query.isPending ? (
-        <DashboardSkeleton />
+        query.fetchStatus === 'paused' ? (
+          <OfflineMessage what="The overview" />
+        ) : (
+          <DashboardSkeleton />
+        )
       ) : !data ? (
         <StateMessage
           role="alert"

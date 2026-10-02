@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useDashboardSummary } from '@/entities/dashboard'
+import { ThemeSwitcher } from '@/features/switch-theme'
 import { paths } from '@/shared/config'
 import { cn } from '@/shared/lib'
 import {
@@ -21,6 +22,9 @@ import {
   type QuickView,
 } from './nav-config'
 
+/** Mirrors the switch in `mocks/browser.ts`, so the note never promises updates that aren't running. */
+const LIVE_UPDATES = import.meta.env.VITE_MOCK_LIVE_UPDATES !== 'false'
+
 const VIEW_ICONS: Record<string, ReactNode> = {
   critical: <AlertOctagonIcon />,
   unassigned: <InboxIcon />,
@@ -32,7 +36,7 @@ function Brand() {
     <Link to={paths.dashboard} className="flex items-center gap-2.5 rounded font-semibold text-fg">
       <span
         aria-hidden="true"
-        className="grid size-8 place-items-center rounded-lg bg-fg text-xs font-bold text-white shadow-sm"
+        className="grid size-8 place-items-center rounded-lg bg-fg text-xs font-bold text-surface shadow-sm"
       >
         AO
       </span>
@@ -162,9 +166,11 @@ export function Sidebar() {
       <nav aria-label="Main" className="flex flex-1 flex-col gap-6 overflow-y-auto">
         <NavItems layout="sidebar" />
       </nav>
+      <ThemeSwitcher variant="row" />
       <p className="rounded-lg border border-line bg-surface-muted p-3 text-xs leading-5 text-muted">
         <span className="block font-semibold text-fg">Demo environment</span>
         Data comes from a simulated API and resets when you reload.
+        {LIVE_UPDATES && ' Simulated teammates keep updating incidents.'}
       </p>
     </header>
   )
@@ -176,9 +182,12 @@ export function CompactHeader() {
     <header className="sticky top-0 z-40 border-b border-line bg-surface shadow-header">
       <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
         <Brand />
-        <Link to={paths.newIncident} className={buttonClassName({ variant: 'primary', size: 'sm' })}>
-          <PlusIcon /> New<span className="sr-only sm:not-sr-only"> incident</span>
-        </Link>
+        <div className="flex items-center gap-1">
+          <ThemeSwitcher />
+          <Link to={paths.newIncident} className={buttonClassName({ variant: 'primary', size: 'sm' })}>
+            <PlusIcon /> New<span className="sr-only sm:not-sr-only"> incident</span>
+          </Link>
+        </div>
       </div>
       <nav aria-label="Main" className="flex overflow-x-auto border-t border-line px-1 sm:px-3">
         <NavItems layout="tabs" />

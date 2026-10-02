@@ -10,9 +10,9 @@ const AUTO_DISMISS_MS: Record<Toast['tone'], number> = {
 }
 
 const toneStyles = {
-  success: { box: 'border-green-200', icon: 'text-success', Icon: CircleCheckIcon },
-  info: { box: 'border-blue-200', icon: 'text-accent', Icon: InfoIcon },
-  error: { box: 'border-red-200', icon: 'text-danger', Icon: AlertOctagonIcon },
+  success: { box: 'border-success-line', icon: 'text-success', Icon: CircleCheckIcon },
+  info: { box: 'border-accent-line', icon: 'text-accent', Icon: InfoIcon },
+  error: { box: 'border-danger-line', icon: 'text-danger', Icon: AlertOctagonIcon },
 } as const
 
 function ToastItem({ toast }: { toast: Toast }) {

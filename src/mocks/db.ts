@@ -48,6 +48,18 @@ export function saveIncident(incident: Incident) {
   db.incidents.set(incident.id, incident)
 }
 
+/** Applies a change and bumps `updatedAt` and `version`, as the server does on every write. */
+export function touch(incident: Incident, changes: Partial<Incident>): Incident {
+  const updated: Incident = {
+    ...incident,
+    ...changes,
+    updatedAt: new Date().toISOString(),
+    version: incident.version + 1,
+  }
+  saveIncident(updated)
+  return updated
+}
+
 export function nextIncidentId() {
   return formatIncidentId(db.nextIncidentNumber++)
 }

@@ -41,6 +41,9 @@ export const incidentListResponseSchema = z.object({
   totalPages: z.number().int(),
 })
 
+/** GET /api/incidents/changes: how many incidents in a filtered view changed after a point in time. */
+export const incidentChangesSchema = z.object({ count: z.number().int().nonnegative() })
+
 export const statusUpdateResponseSchema = z.object({
   id: z.string(),
   status: incidentStatusSchema,
@@ -92,6 +95,7 @@ export type IncidentStatus = z.infer<typeof incidentStatusSchema>
 export type IncidentSeverity = z.infer<typeof incidentSeveritySchema>
 export type IncidentNote = z.infer<typeof incidentNoteSchema>
 export type Incident = z.infer<typeof incidentSchema>
+export type IncidentChanges = z.infer<typeof incidentChangesSchema>
 export type IncidentListResponse = z.infer<typeof incidentListResponseSchema>
 export type StatusUpdateResponse = z.infer<typeof statusUpdateResponseSchema>
 export type CreateIncidentInput = z.infer<typeof createIncidentInputSchema>

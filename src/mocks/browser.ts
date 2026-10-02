@@ -1,6 +1,9 @@
 import { getResponse } from 'msw'
 import { setupWorker } from 'msw/browser'
 import { handlers } from './handlers'
+import { startLiveActivity } from './live-activity'
+
+const LIVE_UPDATE_INTERVAL_MS = 20_000
 
 export const worker = setupWorker(...handlers)
 
@@ -14,6 +17,13 @@ export type MockApiMode = 'service-worker' | 'in-page'
  * in the page. The app keeps working instead of showing an error screen.
  */
 export async function startMockApi(): Promise<MockApiMode> {
+  const mode = await startTransport()
+  // Simulated teammates make real-time updates visible. Turn off with VITE_MOCK_LIVE_UPDATES=false.
+  if (import.meta.env.VITE_MOCK_LIVE_UPDATES !== 'false') startLiveActivity(LIVE_UPDATE_INTERVAL_MS)
+  return mode
+}
+
+async function startTransport(): Promise<MockApiMode> {
   try {
     await worker.start({ onUnhandledRequest: 'bypass', quiet: import.meta.env.PROD })
     return 'service-worker'

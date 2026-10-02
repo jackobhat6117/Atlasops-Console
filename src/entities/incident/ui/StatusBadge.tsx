@@ -4,10 +4,10 @@ import type { IncidentStatus } from '../model/schemas'
 import { STATUS_LABELS } from '../model/status'
 
 const styles: Record<IncidentStatus, { className: string; Icon: typeof AlertTriangleIcon }> = {
-  triggered: { className: 'text-red-700', Icon: AlertTriangleIcon },
-  acknowledged: { className: 'text-amber-700', Icon: EyeIcon },
-  investigating: { className: 'text-blue-700', Icon: CircleDotIcon },
-  resolved: { className: 'text-green-700', Icon: CircleCheckIcon },
+  triggered: { className: 'text-danger', Icon: AlertTriangleIcon },
+  acknowledged: { className: 'text-warning', Icon: EyeIcon },
+  investigating: { className: 'text-accent', Icon: CircleDotIcon },
+  resolved: { className: 'text-success', Icon: CircleCheckIcon },
 }
 
 export function StatusBadge({ status, className }: { status: IncidentStatus; className?: string }) {

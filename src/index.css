@@ -2,12 +2,15 @@
 
 /*
  * Design tokens. Components use these semantic names (bg-surface, text-muted,
- * border-line, …) rather than raw palette values, so the theme can change in one place.
+ * border-line, bg-high-soft, …) rather than raw palette values, so the whole
+ * theme, including dark mode, changes in one place. Every text/background
+ * pair below meets WCAG AA (4.5:1) in both themes.
  */
 @theme {
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
+  /* Surfaces and text */
   --color-canvas: #f5f7fa;
   --color-surface: #ffffff;
   --color-surface-muted: #f8fafc;
@@ -15,21 +18,99 @@
   --color-line-strong: #cbd5e1;
   --color-fg: #172033;
   --color-muted: #5c687c;
-  --color-subtle: #7c8799;
+  --color-subtle: #646f82;
+  --color-overlay: rgb(15 23 42 / 0.4);
+
+  /* Brand / interactive */
   --color-accent: #2457d6;
   --color-accent-hover: #1d46ad;
   --color-accent-soft: #eef4ff;
+  --color-accent-line: #bfdbfe;
+  --color-on-accent: #ffffff;
   --color-focus: #2563eb;
-  --color-danger: var(--color-red-700);
-  --color-danger-soft: var(--color-red-50);
-  --color-success: var(--color-green-700);
-  --color-success-soft: var(--color-green-50);
-  --color-warning: var(--color-amber-800);
-  --color-warning-soft: var(--color-amber-50);
+
+  /* Status families: text color, soft background, border, and a solid fill for bars and stripes */
+  --color-danger: #b91c1c;
+  --color-danger-hover: #991b1b;
+  --color-danger-soft: #fef2f2;
+  --color-danger-line: #fecaca;
+  --color-on-danger: #ffffff;
+
+  --color-success: #15803d;
+  --color-success-soft: #f0fdf4;
+  --color-success-line: #bbf7d0;
+
+  --color-warning: #92400e;
+  --color-warning-soft: #fffbeb;
+  --color-warning-line: #fcd34d;
+  --color-warning-solid: #f59e0b;
+
+  /* "High" severity (orange) and assignment activity (violet) */
+  --color-high: #9a3412;
+  --color-high-soft: #fff7ed;
+  --color-high-line: #fdba74;
+  --color-high-solid: #f97316;
+
+  --color-assign: #6d28d9;
+  --color-assign-soft: #f5f3ff;
+  --color-assign-line: #ddd6fe;
 
   --shadow-panel: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.03);
   --shadow-panel-hover: 0 8px 24px rgb(15 23 42 / 0.08);
   --shadow-header: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+/* `dark:` utilities follow the app's theme setting, not only the OS preference. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* Dark theme: the same tokens, redefined. Applied via <html data-theme="dark">. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-canvas: #0b1120;
+  --color-surface: #111a2c;
+  --color-surface-muted: #182236;
+  --color-line: #243049;
+  --color-line-strong: #34425c;
+  --color-fg: #e6eaf2;
+  --color-muted: #a6b0c3;
+  --color-subtle: #8d98ac;
+  --color-overlay: rgb(2 6 23 / 0.7);
+
+  --color-accent: #7ea4ff;
+  --color-accent-hover: #a3bfff;
+  --color-accent-soft: #16244a;
+  --color-accent-line: #2c4380;
+  --color-on-accent: #0b1120;
+  --color-focus: #7ea4ff;
+
+  --color-danger: #f87171;
+  --color-danger-hover: #fca5a5;
+  --color-danger-soft: #2b1519;
+  --color-danger-line: #5b2328;
+  --color-on-danger: #1a0a0a;
+
+  --color-success: #4ade80;
+  --color-success-soft: #0f2a1b;
+  --color-success-line: #1f4d33;
+
+  --color-warning: #fbbf24;
+  --color-warning-soft: #2a2110;
+  --color-warning-line: #5c4615;
+  --color-warning-solid: #fbbf24;
+
+  --color-high: #fdba74;
+  --color-high-soft: #2c1b0d;
+  --color-high-line: #5c3414;
+  --color-high-solid: #fb923c;
+
+  --color-assign: #c4b5fd;
+  --color-assign-soft: #221b3d;
+  --color-assign-line: #3f3470;
+
+  --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.02);
+  --shadow-panel-hover: 0 8px 24px rgb(0 0 0 / 0.5);
+  --shadow-header: 0 1px 2px rgb(0 0 0 / 0.4);
 }
 
 @layer base {

@@ -5,7 +5,7 @@ import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest'
 import { configureMock, resetMockConfig } from '../mocks/config'
 import { resetDb } from '../mocks/db'
 import { server } from '../mocks/node'
-import { useToastStore } from '@/shared/model'
+import { useThemeStore, useToastStore } from '@/shared/model'
 
 // Deterministic mock API for every test: no latency, no random failures,
 // fresh seeded data per test. Unhandled requests are bugs, so they fail loudly.
@@ -15,6 +15,9 @@ beforeEach(() => {
   resetDb()
   useToastStore.getState().clear()
   resetViewport()
+  localStorage.clear()
+  useThemeStore.setState({ preference: 'system' })
+  delete document.documentElement.dataset.theme
   resetMockConfig()
   configureMock({ minDelayMs: 0, maxDelayMs: 0, failureRate: 0, devControls: true })
 })

@@ -9,10 +9,10 @@ import { AttentionList } from './AttentionList'
 const OPEN_STATUS = 'triggered,acknowledged,investigating'
 
 const STATUS_TONE: Record<IncidentStatus, string> = {
-  triggered: 'bg-red-600',
-  acknowledged: 'bg-amber-500',
-  investigating: 'bg-blue-600',
-  resolved: 'bg-emerald-600',
+  triggered: 'bg-danger',
+  acknowledged: 'bg-warning-solid',
+  investigating: 'bg-accent',
+  resolved: 'bg-success',
 }
 
 function incidentsHref(query: Record<string, string>) {
@@ -151,7 +151,7 @@ export function DashboardOverview({ summary }: { summary: DashboardSummary }) {
                   <span
                     className={cn(
                       'size-2.5 shrink-0 rounded-full',
-                      service.critical > 0 ? 'bg-red-600' : service.open > 0 ? 'bg-amber-500' : 'bg-emerald-600',
+                      service.critical > 0 ? 'bg-danger' : service.open > 0 ? 'bg-warning-solid' : 'bg-success',
                     )}
                     aria-hidden="true"
                   />

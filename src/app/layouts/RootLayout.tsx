@@ -1,7 +1,9 @@
 import { Outlet, ScrollRestoration, useNavigation } from 'react-router-dom'
 import { SIDEBAR_QUERY, cn, useMediaQuery } from '@/shared/lib'
 import { Toaster } from '@/shared/ui'
+import { ThemeSync } from '../providers/ThemeSync'
 import { CompactHeader, Sidebar } from './AppNav'
+import { OfflineBanner } from './OfflineBanner'
 
 export function RootLayout() {
   const isNavigating = useNavigation().state === 'loading'
@@ -29,9 +31,11 @@ export function RootLayout() {
       {hasSidebar ? <Sidebar /> : <CompactHeader />}
 
       <main id="main" tabIndex={-1} className="min-w-0 flex-1 outline-none">
+        <OfflineBanner />
         <Outlet />
       </main>
 
+      <ThemeSync />
       <Toaster />
       <ScrollRestoration />
     </div>

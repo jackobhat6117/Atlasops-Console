@@ -233,6 +233,50 @@ describe('GET /api/dashboard/summary', () => {
   })
 })
 
+describe('GET /api/incidents/changes', () => {
+  const sinceNow = () => new Date(Date.now() - 1000).toISOString()
+
+  it('counts only incidents changed after the timestamp, within the requested filters', async () => {
+    const since = sinceNow()
+    expect((await send(`/incidents/changes?since=${since}`)).body).toEqual({ count: 0 })
+
+    const before = await getIncident('INC-1042')
+    const next = before.status === 'resolved' ? 'triggered' : 'resolved'
+    await send('/incidents/INC-1042/status', { method: 'PATCH', body: JSON.stringify({ status: next }) })
+
+    expect((await send(`/incidents/changes?since=${since}`)).body).toEqual({ count: 1 })
+    expect((await send(`/incidents/changes?since=${since}&status=${next}`)).body).toEqual({ count: 1 })
+    // The incident left the old status, so it no longer counts as a change in that view.
+    expect((await send(`/incidents/changes?since=${since}&status=${before.status}`)).body).toEqual({ count: 0 })
+    expect((await send(`/incidents/changes?since=${new Date(Date.now() + 60_000).toISOString()}`)).body).toEqual({
+      count: 0,
+    })
+  })
+
+  it('counts newly created incidents', async () => {
+    const since = sinceNow()
+    await send('/incidents', {
+      method: 'POST',
+      body: JSON.stringify({
+        title: 'Checkout latency increased',
+        description: 'The 95th percentile latency has exceeded the alert threshold.',
+        status: 'triggered',
+        severity: 'high',
+        service: 'checkout-web',
+        assigneeId: null,
+      }),
+    })
+    expect((await send(`/incidents/changes?since=${since}&service=checkout-web`)).body).toEqual({ count: 1 })
+  })
+
+  it('rejects a missing or malformed timestamp', async () => {
+    expect((await send('/incidents/changes')).status).toBe(400)
+    const invalid = await send('/incidents/changes?since=yesterday')
+    expect(invalid.status).toBe(400)
+    expect(invalid.body.fieldErrors.since).toBeDefined()
+  })
+})
+
 describe('failure simulation', () => {
   it('honors X-Mock-Failure', async () => {
     const { status, body } = await send('/incidents', { headers: { 'X-Mock-Failure': '500' } })

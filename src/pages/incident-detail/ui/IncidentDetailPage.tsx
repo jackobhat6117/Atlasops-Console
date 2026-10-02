@@ -3,7 +3,15 @@ import { useParams } from 'react-router-dom'
 import { SeverityBadge, StatusBadge, useIncident } from '@/entities/incident'
 import { getErrorMessage, isApiError } from '@/shared/api'
 import { formatDateTime, useDocumentTitle } from '@/shared/lib'
-import { AlertOctagonIcon, Banner, Button, RefreshIcon, SearchIcon, StateMessage } from '@/shared/ui'
+import {
+  AlertOctagonIcon,
+  Banner,
+  Button,
+  OfflineMessage,
+  RefreshIcon,
+  SearchIcon,
+  StateMessage,
+} from '@/shared/ui'
 import { IncidentActivity } from '@/widgets/incident-activity'
 import { IncidentNotes } from '@/widgets/incident-notes'
 import { BackToIncidentsLink } from './BackToIncidentsLink'
@@ -32,7 +40,11 @@ export function IncidentDetailPage() {
       <BackToIncidentsLink incidentId={incidentId} />
 
       {query.isPending ? (
-        <IncidentDetailSkeleton />
+        query.fetchStatus === 'paused' ? (
+          <OfflineMessage what="This incident" />
+        ) : (
+          <IncidentDetailSkeleton />
+        )
       ) : !incident ? (
         isApiError(query.error) && query.error.isNotFound ? (
           <StateMessage

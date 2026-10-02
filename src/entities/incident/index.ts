@@ -26,9 +26,10 @@ export {
   assignIncident,
   addIncidentNote,
   fetchIncidentActivity,
+  fetchIncidentChanges,
 } from './api/incident-api'
-export { incidentKeys } from './api/query-keys'
-export { useIncidentList, useIncident, useIncidentActivity } from './api/queries'
+export { incidentKeys, incidentChangeKeys } from './api/query-keys'
+export { useIncidentList, useIncident, useIncidentActivity, useIncidentChanges } from './api/queries'
 export {
   snapshotIncidentCache,
   restoreIncidentCache,

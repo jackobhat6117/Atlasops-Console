@@ -20,8 +20,9 @@ import {
   nextNoteId,
   recordActivity,
   saveIncident,
+  touch,
 } from './db'
-import { queryIncidents } from './query'
+import { countChangedSince, queryIncidents } from './query'
 import { CURRENT_USER, SERVICES, USERS } from './seed'
 import { excerpt } from './seed-activity'
 
@@ -82,17 +83,6 @@ async function readJson(request: Request): Promise<unknown> {
   } catch {
     return undefined
   }
-}
-
-function touch(incident: Incident, changes: Partial<Incident>): Incident {
-  const updated: Incident = {
-    ...incident,
-    ...changes,
-    updatedAt: new Date().toISOString(),
-    version: incident.version + 1,
-  }
-  saveIncident(updated)
-  return updated
 }
 
 function sortedNotes(incident: Incident): Incident {
@@ -160,6 +150,20 @@ export const handlers = [
     if (simulated) return simulated
     const query = parseIncidentListParams(new URL(request.url).searchParams)
     return HttpResponse.json(queryIncidents(getAllIncidents(), query))
+  }),
+
+  // Registered before `/:incidentId`, which would otherwise treat "changes" as an incident ID.
+  http.get('/api/incidents/changes', async ({ request }) => {
+    const simulated = await simulateNetwork(request)
+    if (simulated) return simulated
+    const url = new URL(request.url)
+    const since = Date.parse(url.searchParams.get('since') ?? '')
+    if (Number.isNaN(since)) {
+      return validationError({ since: ['Must be an ISO 8601 timestamp.'] }, 'The since parameter is invalid.')
+    }
+    // Same filters as the list, so the count describes exactly the view the user is looking at.
+    const filters = parseIncidentListParams(url.searchParams)
+    return HttpResponse.json({ count: countChangedSince(getAllIncidents(), filters, since) })
   }),
 
   http.get('/api/incidents/:incidentId', async ({ request, params }) => {

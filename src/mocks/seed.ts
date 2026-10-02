@@ -88,7 +88,7 @@ const SYMPTOMS = [
 
 const REGIONS = ['EU', 'US-East', 'US-West', 'APAC', 'Africa'] as const
 
-const NOTE_MESSAGES = [
+export const NOTE_MESSAGES = [
   'Acknowledged, looking into the dashboards now.',
   'The issue appears isolated to a single region.',
   'Rolled back the latest deploy as a precaution.',

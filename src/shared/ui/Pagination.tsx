@@ -39,7 +39,7 @@ export function Pagination({ page, totalPages, onPageChange, disabled, className
                 className={cn(
                   pageButton,
                   item === page
-                    ? 'bg-fg font-semibold text-white'
+                    ? 'bg-fg font-semibold text-surface'
                     : 'text-muted hover:bg-surface-muted hover:text-fg',
                 )}
                 onClick={() => onPageChange(item)}

@@ -9,6 +9,9 @@ const MAX_QUERY_RETRIES = 2
  * - Queries with the same key share one in-flight request (TanStack dedupes by key).
  * - Only transient failures (network, timeout, 5xx) are retried; 4xx and cancellations are final.
  * - Mutations are never retried automatically: a retried POST could duplicate data.
+ * - Offline, queries pause and resume on reconnect (TanStack default), but mutations run immediately
+ *   (`networkMode: 'always'`) and fail with a network error. A silently queued write that fires
+ *   minutes later would surprise the user; they should see the failure and retry deliberately.
  */
 export function createQueryClient() {
   return new QueryClient({
@@ -20,6 +23,7 @@ export function createQueryClient() {
       },
       mutations: {
         retry: false,
+        networkMode: 'always',
       },
     },
   })

@@ -154,7 +154,7 @@ export function CreateIncidentForm({ onCreated }: { onCreated: (incident: Incide
         {serverError && (
           <div
             role="alert"
-            className="flex items-start gap-2 rounded-lg border border-red-200 bg-danger-soft p-3 text-sm text-danger"
+            className="flex items-start gap-2 rounded-lg border border-danger-line bg-danger-soft p-3 text-sm text-danger"
           >
             <AlertOctagonIcon size={16} className="mt-0.5 shrink-0" />
             <p>

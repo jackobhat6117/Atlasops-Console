@@ -3,8 +3,8 @@ import { cn } from '@/shared/lib'
 import { AlertTriangleIcon, InfoIcon } from './icons'
 
 const tones = {
-  warning: { box: 'border-amber-300 bg-warning-soft text-warning', Icon: AlertTriangleIcon },
-  info: { box: 'border-blue-200 bg-accent-soft text-accent', Icon: InfoIcon },
+  warning: { box: 'border-warning-line bg-warning-soft text-warning', Icon: AlertTriangleIcon },
+  info: { box: 'border-accent-line bg-accent-soft text-accent', Icon: InfoIcon },
 } as const
 
 /** Inline, non-blocking notice, e.g. "showing stale data". */

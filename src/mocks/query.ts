@@ -37,15 +37,23 @@ function compareBy(sort: SortField) {
   }
 }
 
-export function queryIncidents(all: Incident[], query: IncidentListParams) {
-  const filtered = all.filter(
-    (incident) =>
-      (query.status.length === 0 || query.status.includes(incident.status)) &&
-      (query.severity.length === 0 || query.severity.includes(incident.severity)) &&
-      (query.service.length === 0 || query.service.includes(incident.service)) &&
-      (!query.unassigned || incident.assignee === null) &&
-      matchesSearch(incident, query.q),
+function matchesFilters(incident: Incident, query: IncidentListParams) {
+  return (
+    (query.status.length === 0 || query.status.includes(incident.status)) &&
+    (query.severity.length === 0 || query.severity.includes(incident.severity)) &&
+    (query.service.length === 0 || query.service.includes(incident.service)) &&
+    (!query.unassigned || incident.assignee === null) &&
+    matchesSearch(incident, query.q)
   )
+}
+
+/** How many incidents matching the list filters were created or updated after `since` (epoch ms). */
+export function countChangedSince(all: Incident[], query: IncidentListParams, since: number) {
+  return all.filter((incident) => matchesFilters(incident, query) && Date.parse(incident.updatedAt) > since).length
+}
+
+export function queryIncidents(all: Incident[], query: IncidentListParams) {
+  const filtered = all.filter((incident) => matchesFilters(incident, query))
 
   const direction = query.order === 'asc' ? 1 : -1
   const compare = compareBy(query.sort)

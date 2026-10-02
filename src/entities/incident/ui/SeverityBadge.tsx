@@ -6,10 +6,10 @@ import { SEVERITY_LABELS } from '../model/status'
 // Severity is distinguished by icon shape and label as well as color,
 // so it reads correctly for color-blind users and in grayscale.
 const styles: Record<IncidentSeverity, { className: string; Icon: typeof AlertOctagonIcon }> = {
-  critical: { className: 'bg-red-700 text-white ring-red-700', Icon: AlertOctagonIcon },
-  high: { className: 'bg-orange-50 text-orange-800 ring-orange-300', Icon: SignalHighIcon },
-  medium: { className: 'bg-amber-50 text-amber-800 ring-amber-300', Icon: SignalMediumIcon },
-  low: { className: 'bg-slate-50 text-slate-700 ring-slate-300', Icon: SignalLowIcon },
+  critical: { className: 'bg-danger text-on-danger ring-danger', Icon: AlertOctagonIcon },
+  high: { className: 'bg-high-soft text-high ring-high-line', Icon: SignalHighIcon },
+  medium: { className: 'bg-warning-soft text-warning ring-warning-line', Icon: SignalMediumIcon },
+  low: { className: 'bg-surface-muted text-muted ring-line-strong', Icon: SignalLowIcon },
 }
 
 export function SeverityBadge({ severity, className }: { severity: IncidentSeverity; className?: string }) {

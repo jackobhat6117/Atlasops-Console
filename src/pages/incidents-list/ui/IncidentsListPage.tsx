@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useIncidentList } from '@/entities/incident'
+import { useIncidentChanges, useIncidentList } from '@/entities/incident'
 import { IncidentFilters, useIncidentListParams } from '@/features/filter-incidents'
 import { getErrorMessage } from '@/shared/api'
 import { paths, type IncidentListReturnState } from '@/shared/config'
@@ -11,6 +11,7 @@ import {
   Button,
   buttonClassName,
   InboxIcon,
+  OfflineMessage,
   PlusIcon,
   RefreshIcon,
   SearchIcon,
@@ -43,6 +44,13 @@ export function IncidentsListPage() {
     setPage(nextPage)
     resultsRef.current?.scrollIntoView({ block: 'start' })
   }
+
+  // Changes made by others show up as a notice, never as rows moving under the user's cursor.
+  // The count compares against the moment the visible data was loaded.
+  const changedCount = useIncidentChanges(
+    list.params,
+    data && !query.isPlaceholderData ? query.dataUpdatedAt : null,
+  )
 
   const isRefreshing = query.isFetching && !query.isPending
   const isLoadingNewResults = query.isFetching && query.isPlaceholderData
@@ -90,6 +98,21 @@ export function IncidentsListPage() {
           {announcement}
         </div>
 
+        {changedCount > 0 && (
+          <Banner
+            className="m-3"
+            action={
+              <Button size="sm" onClick={() => query.refetch()} loading={query.isFetching}>
+                <RefreshIcon size={14} />
+                Refresh
+              </Button>
+            }
+          >
+            {pluralize(changedCount, 'incident')} in this view {changedCount === 1 ? 'has' : 'have'} changed since
+            you loaded it.
+          </Banner>
+        )}
+
         {query.isError && data && (
           <Banner
             tone="warning"
@@ -106,7 +129,11 @@ export function IncidentsListPage() {
         )}
 
         {query.isPending ? (
-          <IncidentListSkeleton rows={Math.min(list.params.pageSize, 10)} />
+          query.fetchStatus === 'paused' ? (
+            <OfflineMessage what="Incidents" />
+          ) : (
+            <IncidentListSkeleton rows={Math.min(list.params.pageSize, 10)} />
+          )
         ) : !data ? (
           <StateMessage
             role="alert"

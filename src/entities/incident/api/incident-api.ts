@@ -2,6 +2,7 @@ import { request } from '@/shared/api'
 import { incidentActivityListSchema } from '../model/activity'
 import { serializeIncidentListParams, type IncidentListParams } from '../model/list-params'
 import {
+  incidentChangesSchema,
   incidentListResponseSchema,
   incidentNoteSchema,
   incidentSchema,
@@ -16,6 +17,13 @@ export function fetchIncidents(params: IncidentListParams, signal?: AbortSignal)
   search.set('page', String(params.page))
   search.set('pageSize', String(params.pageSize))
   return request(`/incidents?${search}`, { schema: incidentListResponseSchema, signal })
+}
+
+/** Cheap poll: only a count, so the list itself never changes under the user's cursor. */
+export function fetchIncidentChanges(params: IncidentListParams, since: number, signal?: AbortSignal) {
+  const search = serializeIncidentListParams(params)
+  search.set('since', new Date(since).toISOString())
+  return request(`/incidents/changes?${search}`, { schema: incidentChangesSchema, signal })
 }
 
 export function fetchIncident(id: string, signal?: AbortSignal) {

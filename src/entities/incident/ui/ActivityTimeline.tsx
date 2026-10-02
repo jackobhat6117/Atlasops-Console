@@ -6,10 +6,10 @@ import { SeverityBadge } from './SeverityBadge'
 import { StatusBadge } from './StatusBadge'
 
 const TYPE_STYLES: Record<IncidentActivityType, { Icon: typeof PlusIcon; tone: string }> = {
-  created: { Icon: PlusIcon, tone: 'bg-slate-100 text-slate-700 ring-slate-200' },
-  status_changed: { Icon: CircleDotIcon, tone: 'bg-blue-50 text-blue-700 ring-blue-200' },
-  assignee_changed: { Icon: UserIcon, tone: 'bg-violet-50 text-violet-700 ring-violet-200' },
-  note_added: { Icon: MessageIcon, tone: 'bg-amber-50 text-amber-800 ring-amber-200' },
+  created: { Icon: PlusIcon, tone: 'bg-surface-muted text-muted ring-line' },
+  status_changed: { Icon: CircleDotIcon, tone: 'bg-accent-soft text-accent ring-accent-line' },
+  assignee_changed: { Icon: UserIcon, tone: 'bg-assign-soft text-assign ring-assign-line' },
+  note_added: { Icon: MessageIcon, tone: 'bg-warning-soft text-warning ring-warning-line' },
 }
 
 function Name({ children }: { children: ReactNode }) {

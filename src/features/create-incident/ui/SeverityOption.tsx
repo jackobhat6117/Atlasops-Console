@@ -9,26 +9,26 @@ const OPTIONS: Record<
 > = {
   critical: {
     hint: 'Outage or data loss affecting customers',
-    stripe: 'bg-red-600',
-    icon: 'bg-red-50 text-red-700 ring-red-200',
+    stripe: 'bg-danger',
+    icon: 'bg-danger-soft text-danger ring-danger-line',
     Icon: AlertOctagonIcon,
   },
   high: {
     hint: 'Significant degradation for many users',
-    stripe: 'bg-orange-500',
-    icon: 'bg-orange-50 text-orange-700 ring-orange-200',
+    stripe: 'bg-high-solid',
+    icon: 'bg-high-soft text-high ring-high-line',
     Icon: SignalHighIcon,
   },
   medium: {
     hint: 'Partial impact, or a workaround exists',
-    stripe: 'bg-amber-400',
-    icon: 'bg-amber-50 text-amber-700 ring-amber-200',
+    stripe: 'bg-warning-solid',
+    icon: 'bg-warning-soft text-warning ring-warning-line',
     Icon: SignalMediumIcon,
   },
   low: {
     hint: 'Minor issue, little or no customer impact',
-    stripe: 'bg-slate-400',
-    icon: 'bg-slate-50 text-slate-600 ring-slate-200',
+    stripe: 'bg-subtle',
+    icon: 'bg-surface-muted text-muted ring-line',
     Icon: SignalLowIcon,
   },
 }
@@ -75,7 +75,7 @@ export function SeverityOption({ id, severity, invalid = false, className, ...in
       </span>
       <span
         aria-hidden="true"
-        className="grid size-5 shrink-0 place-items-center rounded-full border border-line-strong bg-surface text-white group-has-[:checked]:border-accent group-has-[:checked]:bg-accent"
+        className="grid size-5 shrink-0 place-items-center rounded-full border border-line-strong bg-surface text-on-accent group-has-[:checked]:border-accent group-has-[:checked]:bg-accent"
       >
         <CheckIcon size={12} strokeWidth={3} className="opacity-0 group-has-[:checked]:opacity-100" />
       </span>

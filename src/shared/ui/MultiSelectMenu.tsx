@@ -46,7 +46,7 @@ export function MultiSelectMenu<T extends string>({
       >
         {label}
         {count > 0 && (
-          <span className="rounded-full bg-accent px-1.5 text-xs leading-5 font-semibold text-white tabular-nums">
+          <span className="rounded-full bg-accent px-1.5 text-xs leading-5 font-semibold text-on-accent tabular-nums">
             {count}
           </span>
         )}
@@ -73,7 +73,7 @@ export function MultiSelectMenu<T extends string>({
               <span
                 className={cn(
                   'flex size-4 items-center justify-center rounded border',
-                  selected.includes(option.value) ? 'border-accent bg-accent text-white' : 'border-line-strong',
+                  selected.includes(option.value) ? 'border-accent bg-accent text-on-accent' : 'border-line-strong',
                 )}
               >
                 <DropdownMenu.ItemIndicator>

@@ -19,3 +19,13 @@ export const incidentKeys = {
   detail: (id: string) => [...incidentKeys.details(), id] as const,
   activity: (id: string) => [...incidentKeys.detail(id), 'activity'] as const,
 }
+
+/**
+ * Change polling lives outside `incidentKeys.all` on purpose: mutations invalidate that whole tree,
+ * and a user's own edit must not make the "someone else changed this view" notice flash.
+ * The timestamp is part of the key, so refreshing the list (a newer timestamp) starts a clean count.
+ */
+export const incidentChangeKeys = {
+  since: (params: IncidentListParams, since: number) =>
+    ['incident-changes', serializeIncidentListParams(params).toString(), since] as const,
+}

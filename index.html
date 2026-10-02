@@ -4,7 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>atlasops-console</title>
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f5f7fa" />
+    <title>AtlasOps</title>
+    <script>
+      // Apply the saved theme before first paint, so dark-mode users never see a light flash.
+      // Mirrors useThemeStore (key "atlasops-theme") and ThemeSync; any storage error falls back to the OS setting.
+      ;(function () {
+        var preference = 'system'
+        try {
+          var stored = JSON.parse(localStorage.getItem('atlasops-theme') || 'null')
+          var value = stored && stored.state && stored.state.preference
+          if (value === 'light' || value === 'dark') preference = value
+        } catch (error) {}
+        var dark = preference === 'dark' || (preference === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', dark ? '#0b1120' : '#f5f7fa')
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

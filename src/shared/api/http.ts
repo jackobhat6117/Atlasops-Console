@@ -22,6 +22,10 @@ export interface RequestOptions<T> {
 export async function request<T>(path: string, options: RequestOptions<T>): Promise<T> {
   const { method = 'GET', body, schema, signal, timeoutMs = REQUEST_TIMEOUT_MS, headers } = options
 
+  // Writes fail immediately while offline instead of waiting for the timeout. Reads are paused
+  // by TanStack Query itself and resume on reconnect, so they never reach this point offline.
+  if (method !== 'GET' && navigator.onLine === false) throw new ApiError('network')
+
   const timeoutSignal = AbortSignal.timeout(timeoutMs)
   const combinedSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal
   const url = new URL(`${API_BASE_URL}${path}`, window.location.origin)
