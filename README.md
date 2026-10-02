@@ -32,9 +32,11 @@ AtlasOps lets support engineers and technical leads:
 | Framework / build | React 19, TypeScript, Vite |
 | Routing and URL state | React Router |
 | Server state | TanStack Query |
+| Shared client state | Zustand (toast / announcement queue only) |
 | Forms and validation | React Hook Form + Zod |
 | Accessible primitives | Radix UI (Dialog, Select) |
-| Styling | Tailwind CSS |
+| Styling | Tailwind CSS v4 |
+| Architecture | Feature-Sliced Design (FSD) |
 | Mock API | Mock Service Worker (MSW) |
 | Testing | Vitest, React Testing Library, user-event, jest-axe |
 
@@ -85,25 +87,40 @@ There is no backend to run. The API is served by Mock Service Worker inside the 
 
 ### Project structure
 
+The code follows [Feature-Sliced Design](https://feature-sliced.design). Layers only import from layers below them, and slices are imported only through their `index.ts` public API.
+
 ```text
 src/
-  app/                 # providers, router, app shell
-  features/
-    incidents/         # api, schemas, hooks, components, routes
-    users/
-  components/          # shared UI (Badge, Button, Pagination, states)
-  lib/                 # http client, ApiError, URL-state helpers
-  mocks/               # MSW handlers, seeded in-memory DB
-  test/                # test setup and render helpers
+  app/        providers (TanStack Query, router), app shell, API-unavailable fallback
+  pages/      route screens                                   (planned)
+  widgets/    composite blocks: incident table, filter bar    (planned)
+  features/   user actions
+    filter-incidents/        URL-synced search, filter, sort, page
+    change-incident-status/  optimistic status mutation
+    assign-incident/         assign / reassign / unassign
+    add-incident-note/       add an investigation note
+    create-incident/         create mutation
+  entities/   business objects
+    incident/   Zod schemas, list params, status rules, API, query keys, queries, cache helpers
+    user/       user schema, users query
+    service/    services query
+  shared/     api (HTTP client, ApiError, QueryClient), config, model (toast store)
+  mocks/      MSW handlers + seeded data (infrastructure, outside the layers)
+  test/       Vitest setup and render helpers (infrastructure, outside the layers)
 docs/
-  API.md               # mock API reference
+  API.md      mock API reference
 ```
 
 ### Component boundaries
 _TBD_
 
 ### Data-fetching strategy
-_TBD: query keys, caching, invalidation, cancellation, stale-response handling._
+
+- **Client:** `shared/api/request()` wraps `fetch`. It validates every response with a Zod schema (the API is a trust boundary), applies a 10 s timeout, and accepts a caller `AbortSignal`.
+- **Caching:** TanStack Query with hierarchical keys (`['incidents', 'list', <query>]`, `['incidents', 'detail', id]`). Data is fresh for 30 s, so going back to a list or incident you just saw costs no request. Identical in-flight queries are deduplicated.
+- **Stale responses:** the list key is the canonical URL query string. When search or filters change, TanStack aborts the old request through the signal passed to `fetch`, so an older search can never overwrite a newer one. The previous page stays visible while the next one loads (`keepPreviousData`).
+- **Retries:** only transient failures (network, timeout, 5xx) are retried, up to 2 times. 4xx errors and cancellations are final. Mutations are never retried automatically, because a retried POST could create a duplicate.
+- **Invalidation:** after a mutation, the affected detail entry is updated directly and the lists are invalidated, so every cached page reconciles with the server.
 
 ### State ownership
 
@@ -113,16 +130,32 @@ _TBD: query keys, caching, invalidation, cancellation, stale-response handling._
 | URL state (search, filters, sort, page) | `URLSearchParams` via React Router |
 | Form state | React Hook Form |
 | Local component state | `useState` |
-| Shared client state | _TBD: kept minimal, no global store planned_ |
+| Shared client state | Zustand: toast / announcement queue only |
 
 ### URL state handling
-_TBD_
+
+`entities/incident/model/list-params.ts` is the only code that converts between the URL and typed list params. The UI and the mock API both use it.
+
+- URL input is untrusted. Unknown statuses, severities and sort fields are dropped, malformed service names are rejected, numbers are clamped, and search is capped at 200 characters. It never throws.
+- Serialization is canonical: defaults are omitted and lists are kept in a fixed order. Equivalent URLs therefore share one cache entry.
+- `features/filter-incidents` exposes `useIncidentListParams()`. Changing search, a filter or the sort resets to page 1. Typing a search replaces the history entry instead of pushing a new one.
 
 ### Form architecture
 _TBD_
 
 ### Error handling
-_TBD: how 400, 404, 409, 500, timeouts and aborted requests are handled._
+
+Every failure becomes an `ApiError` with a `kind`: `http`, `network`, `timeout`, `aborted` or `invalid-response`. For HTTP errors it also carries `status`, `code`, `fieldErrors` and `currentVersion`. Error bodies are parsed defensively, because they are untrusted input.
+
+The UI shows only messages from `getErrorMessage()`. These are written on the client and never copied from the server, so stack traces and internal details can't reach the user.
+
+| Case | Handling |
+|---|---|
+| 400 | Field errors shown next to the matching form fields |
+| 404 | "Not found" state |
+| 409 | Optimistic change rolled back, with a "changed by someone else" message |
+| 500, network, timeout | Retried automatically for queries; error toast and rollback for mutations |
+| Aborted | Ignored, since it means a newer request replaced this one |
 
 ### Testing strategy
 _TBD_
@@ -135,9 +168,11 @@ _TBD_
 ## 4. Important Decisions
 
 1. **MSW instead of a hosted backend.** _TBD: rationale and trade-offs._
-2. **TanStack Query instead of a global state library.** _TBD_
-3. **Table / card layout choice.** _TBD_
-4. **Optimistic update design.** _TBD_
+2. **TanStack Query for server state; Zustand only for toasts.** Nearly all "global" state here is server data (TanStack Query) or list state (the URL). The only shared client state left is the toast queue: mutation callbacks push to it outside React components, and one `aria-live` region at the root reads it. Zustand handles that in a few lines without a provider. Putting server data or filters in it would duplicate the cache and the URL.
+3. **Feature-Sliced Design.** It gives clear, enforceable boundaries: entities own data and API, features own user actions, and pages compose them. The trade-off is more folders and `index.ts` files than a small app strictly needs.
+4. **One shared list-params parser.** The UI and the mock API use the same sanitizer, so the client and the "server" can't disagree about what a URL means.
+5. **Table / card layout choice.** _TBD_
+6. **Optimistic status, pessimistic everything else.** The status change is optimistic: it patches the detail and every cached list page, rolls back on error, and sends `version` so concurrent edits return 409 instead of silently overwriting. Assign, note and create wait for the server. Assignment depends on server-side user validation, and a note must never look saved when it wasn't.
 
 ---
 
@@ -171,6 +206,7 @@ _TBD_
 ## 8. Incomplete Work
 
 - [x] Mock API (MSW handlers, seeded data, contract tests)
+- [x] Data layer (HTTP client, query hooks, mutations, URL state, toast store)
 - [ ] Incident list
 - [ ] Incident details
 - [ ] Create incident
