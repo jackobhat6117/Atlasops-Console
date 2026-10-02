@@ -84,6 +84,10 @@ src/
 - Use `paths.*` from `@/shared/config` for every URL. List → detail links pass `IncidentListReturnState` (`listSearch`, `lastViewedId`) as router state. The detail page's `BackToIncidentsLink` uses it to restore the list, and the list then focuses and marks the "Last viewed" row.
 - Layouts that differ structurally use `useMediaQuery(DESKTOP_QUERY)` and mount only one variant, instead of CSS-hiding duplicate content.
 - Every page calls `useDocumentTitle`. Every async view handles pending, error-without-data (retry), error-with-stale-data (Banner), and empty/no-results states.
+- **Announcing conditional UI:** never rely on a conditionally rendered `role="status"` or `aria-live` element, because screen readers often ignore live regions inserted together with their content. Render `<LiveMessage message={cond ? '…' : ''} />` (always mounted) next to the visual `Banner`, which has no role. When a `StateMessage` is the whole page (404, crash), pass `headingLevel={1}` instead of adding a duplicate sr-only `<h1>`.
+- Menu items must show keyboard focus visibly: use `data-[highlighted]:bg-accent-soft data-[highlighted]:outline-2 data-[highlighted]:-outline-offset-2 data-[highlighted]:outline-focus`, as in `MultiSelectMenu`.
+- Don't use Tailwind's `not-sr-only` for reveal-on-focus elements; it resets padding. See the skip link in `RootLayout`.
+- `src/app/accessibility.test.tsx` axe-scans every route at three widths, in dark mode, and with overlays open. Add new routes and overlays to it.
 - Toast live regions are plain `aria-live` containers, not `role="alert"`, so a page's real alert stays queryable.
 - Forms: use RHF + `zodResolver`, lay fields out with `Field`, wire controls with `fieldAria(id, { error, hint })`, use `useWatch` (not `watch()`, which the compiler lint rejects), and show an `ErrorSummary` keyed by `submitCount`. Map server `400` `fieldErrors` with `setError`.
 - `ConfirmDialog` restores focus to whatever was focused when it opened, because Radix only restores focus to a `Dialog.Trigger`. Use `useUnsavedChangesGuard(isDirty)` together with it, and call `allowNextNavigation()` before redirecting after a save.

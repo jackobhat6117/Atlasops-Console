@@ -5,8 +5,8 @@ import { AlertOctagonIcon, Button, StateMessage } from '@/shared/ui'
 export function ApiUnavailable() {
   return (
     <main className="mx-auto max-w-xl px-4 py-[15vh]">
-      <h1 className="sr-only">AtlasOps is unavailable</h1>
       <StateMessage
+        headingLevel={1}
         role="alert"
         icon={<AlertOctagonIcon size={32} />}
         title="AtlasOps can't reach its API"

@@ -6,6 +6,7 @@ import { formatDateTime, useDocumentTitle } from '@/shared/lib'
 import {
   AlertOctagonIcon,
   Banner,
+  LiveMessage,
   Button,
   OfflineMessage,
   PlusIcon,
@@ -59,6 +60,7 @@ export function DashboardPage() {
         </div>
       </header>
 
+      <LiveMessage message={query.isError && data ? "Couldn't refresh the overview. Showing earlier data." : ''} />
       {query.isError && data && (
         <Banner
           tone="warning"
@@ -93,9 +95,6 @@ export function DashboardPage() {
         />
       ) : (
         <>
-          <p className="sr-only" aria-live="polite">
-            Operations overview updated.
-          </p>
           <DashboardOverview summary={data} />
         </>
       )}

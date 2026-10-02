@@ -57,7 +57,7 @@ export function ThemeSwitcher({ variant = 'icon' }: { variant?: 'icon' | 'row' }
                 <DropdownMenu.RadioItem
                   key={value}
                   value={value}
-                  className="flex cursor-default items-center gap-2 rounded px-2 py-1.5 text-sm outline-none select-none data-[highlighted]:bg-surface-muted"
+                  className="flex cursor-default items-center gap-2 rounded px-2 py-1.5 text-sm outline-none select-none data-[highlighted]:bg-accent-soft data-[highlighted]:outline-2 data-[highlighted]:-outline-offset-2 data-[highlighted]:outline-focus"
                 >
                   <Icon size={15} className="text-muted" />
                   {label}

@@ -6,6 +6,7 @@ import { formatDateTime, useDocumentTitle } from '@/shared/lib'
 import {
   AlertOctagonIcon,
   Banner,
+  LiveMessage,
   Button,
   OfflineMessage,
   RefreshIcon,
@@ -68,6 +69,7 @@ export function IncidentDetailPage() {
         )
       ) : (
         <>
+          <LiveMessage message={query.isError ? "Couldn't refresh this incident. Showing earlier data." : ''} />
           {query.isError && (
             <Banner
               tone="warning"

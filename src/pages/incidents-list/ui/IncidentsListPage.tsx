@@ -11,6 +11,7 @@ import {
   Button,
   buttonClassName,
   InboxIcon,
+  LiveMessage,
   OfflineMessage,
   PlusIcon,
   RefreshIcon,
@@ -97,6 +98,16 @@ export function IncidentsListPage() {
         <div aria-live="polite" className="sr-only">
           {announcement}
         </div>
+        <LiveMessage
+          message={[
+            changedCount > 0
+              ? `${pluralize(changedCount, 'incident')} in this view ${changedCount === 1 ? 'has' : 'have'} changed. Refresh to see the latest.`
+              : '',
+            query.isError && data ? "Couldn't refresh incidents. Showing earlier results." : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        />
 
         {changedCount > 0 && (
           <Banner

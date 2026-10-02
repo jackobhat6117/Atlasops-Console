@@ -189,7 +189,10 @@ describe('Incident list page', () => {
     // The rows themselves must not move until the user asks.
     expect(getDataRows(screen.getByRole('table')).map((row) => row.textContent)).toEqual(firstPage)
 
-    await user.click(within(notice.closest('[role="status"]') as HTMLElement).getByRole('button', { name: 'Refresh' }))
+    expect(notice).toBeVisible()
+    // Announced through an always-mounted live region, not only shown visually.
+    expect(screen.getByText(/1 incident in this view has changed\. Refresh to see the latest\./)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Refresh' }))
 
     await waitFor(() => expect(screen.queryByText(/changed since you loaded it/)).not.toBeInTheDocument())
   })

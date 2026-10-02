@@ -68,7 +68,7 @@ export function MultiSelectMenu<T extends string>({
               checked={selected.includes(option.value)}
               onCheckedChange={() => onToggle(option.value)}
               onSelect={(event) => event.preventDefault()}
-              className="flex cursor-default items-center gap-2 rounded px-2 py-1.5 text-sm text-fg outline-none select-none data-[highlighted]:bg-surface-muted"
+              className="flex cursor-default items-center gap-2 rounded px-2 py-1.5 text-sm text-fg outline-none select-none data-[highlighted]:bg-accent-soft data-[highlighted]:outline-2 data-[highlighted]:-outline-offset-2 data-[highlighted]:outline-focus"
             >
               <span
                 className={cn(
@@ -88,7 +88,7 @@ export function MultiSelectMenu<T extends string>({
               <DropdownMenu.Separator className="my-1 h-px bg-line" />
               <DropdownMenu.Item
                 onSelect={onClear}
-                className="cursor-default rounded px-2 py-1.5 text-sm text-muted outline-none select-none data-[highlighted]:bg-surface-muted data-[highlighted]:text-fg"
+                className="cursor-default rounded px-2 py-1.5 text-sm text-muted outline-none select-none data-[highlighted]:bg-accent-soft data-[highlighted]:outline-2 data-[highlighted]:-outline-offset-2 data-[highlighted]:outline-focus data-[highlighted]:text-fg"
               >
                 Clear {label.toLowerCase()}
               </DropdownMenu.Item>

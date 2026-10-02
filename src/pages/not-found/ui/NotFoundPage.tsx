@@ -7,8 +7,8 @@ export function NotFoundPage() {
   useDocumentTitle('Page not found')
   return (
     <div className="mx-auto max-w-2xl px-4 py-16">
-      <h1 className="sr-only">Page not found</h1>
       <StateMessage
+        headingLevel={1}
         title="Page not found"
         description="The page you're looking for doesn't exist or has moved."
         action={

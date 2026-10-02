@@ -14,7 +14,8 @@ export function RootLayout() {
     <div className={cn('min-h-dvh', hasSidebar ? 'grid grid-cols-[16rem_minmax(0,1fr)]' : 'flex flex-col')}>
       <a
         href="#main"
-        className="sr-only z-50 rounded-md bg-surface px-3 py-2 font-medium shadow focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+        // Off-screen until focused, then slides in fully styled. (Tailwind v4's not-sr-only resets padding.)
+        className="fixed top-2 left-2 z-50 -translate-y-20 rounded-md bg-surface px-3 py-2 font-medium text-fg shadow-lg ring-1 ring-line transition-transform focus:translate-y-0"
       >
         Skip to main content
       </a>

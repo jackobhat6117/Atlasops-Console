@@ -14,8 +14,8 @@ export function RouteErrorPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-16">
-      <h1 className="sr-only">Something went wrong</h1>
       <StateMessage
+        headingLevel={1}
         role="alert"
         icon={<AlertOctagonIcon size={28} />}
         title="Something went wrong"

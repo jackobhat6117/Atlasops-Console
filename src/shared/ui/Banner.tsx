@@ -7,7 +7,11 @@ const tones = {
   info: { box: 'border-accent-line bg-accent-soft text-accent', Icon: InfoIcon },
 } as const
 
-/** Inline, non-blocking notice, e.g. "showing stale data". */
+/**
+ * Inline, non-blocking notice, e.g. "showing stale data". Purely visual: it is
+ * usually rendered conditionally, so pair it with an always-mounted <LiveMessage>
+ * when the change must be announced.
+ */
 export function Banner({
   tone = 'info',
   children,
@@ -22,7 +26,6 @@ export function Banner({
   const { box, Icon } = tones[tone]
   return (
     <div
-      role="status"
       className={cn('flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md border px-3 py-2', box, className)}
     >
       <Icon className="shrink-0" />
