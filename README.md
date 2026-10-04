@@ -137,7 +137,7 @@ Details and limitations: **[docs/QUALITY.md](docs/QUALITY.md#accessibility)**.
 ## 7. Testing
 
 - **Approach:** mostly page-level integration tests that render the real routes against the real mock API and interact like a user. Unit tests cover pure logic.
-- **Coverage:** 143 tests, including every required behavior: list rendering, search and filtering, successful and failed mutations with rollback, form validation, and keyboard and dialog focus.
+- **Coverage:** 151 tests, including every required behavior: list rendering, search and filtering, successful and failed mutations with rollback, form validation, and keyboard and dialog focus.
 - **Not covered:** cross-browser visual regression and end-to-end tests against a deployed backend.
 
 Details: **[docs/QUALITY.md](docs/QUALITY.md#testing)**.

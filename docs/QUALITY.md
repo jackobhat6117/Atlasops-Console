@@ -63,7 +63,7 @@ All 11 accessibility criteria in the brief are met and covered by tests or brows
 
 ## Testing
 
-143 tests across unit, hook and page-integration levels.
+151 tests across unit, hook and page-integration levels.
 
 - **Covered:**
   - Mock API contracts and failure controls.
