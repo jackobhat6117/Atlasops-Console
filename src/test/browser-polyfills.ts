@@ -51,6 +51,7 @@ window.matchMedia = (query: string) =>
     dispatchEvent: () => false,
   }) as MediaQueryList
 
+window.scrollTo = () => {}
 Element.prototype.scrollIntoView ??= function scrollIntoView() {}
 Element.prototype.hasPointerCapture ??= () => false
 Element.prototype.setPointerCapture ??= () => {}

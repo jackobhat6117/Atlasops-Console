@@ -18,7 +18,8 @@ import { notify } from '@/shared/model'
  * 1. onMutate: cancel in-flight incident queries (so a late response can't
  *    overwrite the optimistic value), snapshot the cache, and apply the new
  *    status to the detail and every cached list page.
- * 2. onError: restore the snapshot and announce a useful error.
+ * 2. onError: revert only this incident's status fields (guarded against newer data) and
+ *    announce a useful error. The full snapshot is a fallback when no detail was cached.
  * 3. onSettled: invalidate so the cache reconciles with the server either way.
  *
  * The incident's `version` is sent so a concurrent edit returns 409 instead
@@ -39,13 +40,22 @@ export function useChangeIncidentStatus(incidentId: string) {
 
     onMutate: async (status) => {
       await queryClient.cancelQueries({ queryKey: incidentKeys.all })
+      const current = queryClient.getQueryData<Incident>(incidentKeys.detail(incidentId))
+      const previous = current && { status: current.status, updatedAt: current.updatedAt, version: current.version }
       const snapshot = snapshotIncidentCache(queryClient)
       patchIncidentInCache(queryClient, incidentId, { status })
-      return { snapshot }
+      return { previous, snapshot }
     },
 
-    onError: (error, _status, context) => {
-      if (context) restoreIncidentCache(queryClient, context.snapshot)
+    onError: (error, status, context) => {
+      if (context?.previous) {
+        // Revert only this incident's status fields, and only if nothing newer replaced the
+        // optimistic value, so a queued change or a fresher server response isn't overwritten.
+        const cached = queryClient.getQueryData<Incident>(incidentKeys.detail(incidentId))
+        if (cached?.status === status) patchIncidentInCache(queryClient, incidentId, context.previous)
+      } else if (context) {
+        restoreIncidentCache(queryClient, context.snapshot)
+      }
       notify.error(
         isApiError(error) && error.isConflict
           ? getErrorMessage(error)

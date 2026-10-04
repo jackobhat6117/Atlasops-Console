@@ -1,4 +1,5 @@
 import { createBrowserRouter, type RouteObject } from 'react-router-dom'
+import { NotFoundPage } from '@/pages/not-found'
 import { paths } from '@/shared/config'
 import { RootLayout } from './layouts/RootLayout'
 import { PageFallback } from './ui/PageFallback'
@@ -35,7 +36,8 @@ export const routes: RouteObject[] = [
           },
           {
             path: '*',
-            lazy: () => import('@/pages/not-found').then((m) => ({ Component: m.NotFoundPage })),
+            // Static on purpose: RouteErrorPage already bundles it in the initial chunk.
+            Component: NotFoundPage,
           },
         ],
       },
