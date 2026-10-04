@@ -32,6 +32,37 @@ describe('Dashboard page', () => {
     )
   })
 
+  it('shows response times by severity and the created-vs-resolved trend', async () => {
+    renderApp('/')
+
+    const table = await screen.findByRole('table', { name: /response times for incidents created in the last 30 days/i })
+    const rows = within(table).getAllByRole('row')
+    expect(rows.map((row) => within(row).queryByRole('rowheader')?.textContent)).toEqual([
+      undefined,
+      'Critical',
+      'High',
+      'Medium',
+      'Low',
+      'All severities',
+    ])
+    // Durations are human-readable, with the 90th percentile alongside the median.
+    expect(within(rows[1]).getAllByText(/^(\d+m|\d+h( \d+m)?|<1m)$/).length).toBeGreaterThan(0)
+    expect(within(rows[1]).getAllByText(/^p90 /).length).toBe(2)
+
+    expect(screen.getByRole('table', { name: /created and resolved per day, last 14 days/i })).toBeInTheDocument()
+    expect(screen.getByText(/backlog (grew|shrank) by|backlog unchanged/)).toBeInTheDocument()
+  })
+
+  it('keeps the dashboard usable when the metrics request fails', async () => {
+    server.use(http.get('*/api/metrics/response', () => HttpResponse.json({}, { status: 500 })))
+    const { user } = renderApp('/')
+
+    expect(await screen.findByText('Open', { selector: 'span' })).toBeInTheDocument()
+    expect((await screen.findAllByText(/Couldn't load response metrics/)).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('button', { name: 'Retry' }).length).toBeGreaterThan(0)
+    await user.click(screen.getAllByRole('button', { name: 'Retry' })[0])
+  })
+
   it('shows an error and retries successfully', async () => {
     server.use(
       http.get(

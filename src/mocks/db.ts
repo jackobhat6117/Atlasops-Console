@@ -81,3 +81,8 @@ export function recordActivity(entry: DistributiveOmit<IncidentActivity, 'id'>) 
   db.activity.set(entry.incidentId, [...(db.activity.get(entry.incidentId) ?? []), saved])
   return saved
 }
+
+/** Every audit entry across all incidents, oldest first within each incident. */
+export function getAllActivity(): IncidentActivity[] {
+  return Array.from(db.activity.values()).flat()
+}

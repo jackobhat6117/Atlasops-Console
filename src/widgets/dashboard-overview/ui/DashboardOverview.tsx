@@ -5,6 +5,7 @@ import { paths } from '@/shared/config'
 import { cn, formatNumber, pluralize } from '@/shared/lib'
 import { Panel } from '@/shared/ui'
 import { AttentionList } from './AttentionList'
+import { ResponseMetrics } from './ResponseMetrics'
 
 const OPEN_STATUS = 'triggered,acknowledged,investigating'
 
@@ -118,6 +119,8 @@ export function DashboardOverview({ summary }: { summary: DashboardSummary }) {
           ))}
         </ul>
       </section>
+
+      <ResponseMetrics />
 
       <div className="grid items-start gap-5 2xl:grid-cols-[minmax(0,1.6fr)_22rem]">
         <Panel

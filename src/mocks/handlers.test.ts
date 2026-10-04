@@ -379,3 +379,24 @@ describe('GET /api/incidents/:id/activity', () => {
     expect((await send('/incidents/INC-0/activity')).status).toBe(404)
   })
 })
+
+describe('GET /api/metrics/response', () => {
+  it('returns response times by severity and a 14-day trend from the seeded history', async () => {
+    const { status, body } = await send('/metrics/response?days=30')
+    expect(status).toBe(200)
+    expect(body.window.days).toBe(30)
+    expect(body.bySeverity.map((row: { severity: string }) => row.severity)).toEqual(['critical', 'high', 'medium', 'low'])
+    expect(body.daily).toHaveLength(14)
+    // Seeded on-call behaviour: critical incidents are picked up faster than low ones.
+    const median = (severity: string) =>
+      body.bySeverity.find((row: { severity: string }) => row.severity === severity).acknowledge.medianMs
+    expect(median('critical')).toBeLessThan(median('low'))
+  })
+
+  it("reflects the user's own changes", async () => {
+    const before = (await send('/metrics/response')).body.daily.at(-1).resolved
+    const open = (await send('/incidents?status=investigating&pageSize=1')).body.items[0]
+    await send(`/incidents/${open.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'resolved' }) })
+    expect((await send('/metrics/response')).body.daily.at(-1).resolved).toBe(before + 1)
+  })
+})

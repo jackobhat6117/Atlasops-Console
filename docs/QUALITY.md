@@ -63,13 +63,13 @@ All 11 accessibility criteria in the brief are met and covered by tests or brows
 
 ## Testing
 
-132 tests across unit, hook and page-integration levels.
+143 tests across unit, hook and page-integration levels.
 
 - **Covered:**
   - Mock API contracts and failure controls.
   - HTTP error, timeout and abort mapping; URL parsing.
   - Optimistic status success, rollback and conflict.
-  - Dashboard aggregates and rendering.
+  - Dashboard aggregates and rendering, including response-time metrics (percentiles, definitions, the reopen rule) and the trend.
   - List search, filter, sort, pagination and keyboard behavior.
   - Detail workflows: status, assignment, notes (including safe HTML rendering) and the activity log.
   - Create validation, server errors, duplicate-submit prevention and dialog focus.

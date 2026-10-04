@@ -1,5 +1,5 @@
 export { cn } from './cn'
-export { formatDateTime, formatRelativeTime, formatNumber, pluralize } from './format'
+export { formatDateTime, formatRelativeTime, formatNumber, pluralize, formatDuration } from './format'
 export { useDebouncedCallback } from './use-debounced-callback'
 export { useDocumentTitle } from './use-document-title'
 export { useMediaQuery, DESKTOP_QUERY, SIDEBAR_QUERY } from './use-media-query'

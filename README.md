@@ -10,7 +10,7 @@
 
 ### Highlights
 
-- **Triage dashboard:** open, critical and unassigned queues, status mix, attention table and service posture.
+- **Triage dashboard:** open, critical and unassigned queues, status mix, attention table, service posture, **response times** (median and p90 time to acknowledge and resolve, by severity) and a 14-day created-vs-resolved trend.
 - **Incident list for 1,000+ incidents:** debounced search, multi-filters, sorting and pagination, all kept in the URL so views are shareable and survive reload.
 - **Incident detail:** optimistic status changes with rollback and conflict detection, assignment, notes, and a server-recorded activity log.
 - **Create incident:** inline and summarized validation, live preview, duplicate-submit protection and an unsaved-changes guard.
@@ -111,6 +111,7 @@ Full details: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 7. **A server-recorded activity log,** consistent across users like a real audit trail.
 8. **Real-time by polling and a "changed — Refresh" notice,** never rows moving under the cursor.
 9. **Offline: reads pause, writes fail fast,** never silently queued.
+10. **Response times from the audit log, as median and p90,** with written definitions, not a misleading mean.
 
 The reasoning and trade-offs for each: **[docs/DECISIONS.md](docs/DECISIONS.md)**.
 
@@ -136,7 +137,7 @@ Details and limitations: **[docs/QUALITY.md](docs/QUALITY.md#accessibility)**.
 ## 7. Testing
 
 - **Approach:** mostly page-level integration tests that render the real routes against the real mock API and interact like a user. Unit tests cover pure logic.
-- **Coverage:** 132 tests, including every required behavior: list rendering, search and filtering, successful and failed mutations with rollback, form validation, and keyboard and dialog focus.
+- **Coverage:** 143 tests, including every required behavior: list rendering, search and filtering, successful and failed mutations with rollback, form validation, and keyboard and dialog focus.
 - **Not covered:** cross-browser visual regression and end-to-end tests against a deployed backend.
 
 Details: **[docs/QUALITY.md](docs/QUALITY.md#testing)**.
@@ -147,7 +148,7 @@ Details: **[docs/QUALITY.md](docs/QUALITY.md#testing)**.
 - Data is in-memory and resets on reload.
 - Authentication and authorization are out of scope.
 - Live updates use polling; the optional Server-Sent Events endpoint is not implemented.
-- Dashboard figures are snapshots, because the model has no historical time series.
+- Trends cover 14 days of in-memory history; longer-range reporting would need a persistent event store.
 - Opening an incident directly from a shared link falls back to the default list on return.
 - No formal screen-reader QA pass yet.
 
@@ -157,7 +158,7 @@ Details: **[docs/QUALITY.md](docs/QUALITY.md#testing)**.
 1. Playwright smoke tests in CI against the deployed build.
 2. Server-Sent Events when a real backend exists.
 3. Persist the return-to-list context in the URL.
-4. Historical incident trends.
+4. Response-time targets (SLOs) per severity, with breach alerts.
 
 ## License and assets
 

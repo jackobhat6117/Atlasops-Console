@@ -132,6 +132,22 @@ Every mutation appends an entry, recorded by the server with the current user as
 
 All entries also have `id`, `incidentId`, `actor` (user) and `createdAt`.
 
+### `GET /api/metrics/response`
+
+Response-time metrics computed from the activity log, the way a real backend would compute them from an event store.
+
+| Param | Example | Notes |
+|---|---|---|
+| `days` | `30` | Window size. Integer from 1 to 90, default 30; invalid values fall back to the default. |
+
+Definitions:
+- **Time to acknowledge** (the MTTA family): from creation to the first transition out of `triggered`, meaning a human responded.
+- **Time to resolve** (the MTTR family): from creation to the **first** transition to `resolved`. Reopening doesn't reset it.
+- **Population:** incidents created in the window that started as `triggered`. Incidents not yet acknowledged or resolved count toward `incidents` but have no duration yet.
+- **Statistics:** `medianMs`, `p90Ms` (nearest rank) and `meanMs` for each severity and overall. The UI shows median and p90, because one stuck incident can distort a mean.
+
+Response: `{ generatedAt, window: { days, from, to }, overall: { incidents, acknowledge, resolve }, bySeverity: [{ severity, incidents, acknowledge, resolve }], daily: [{ date, created, resolved }] }`. `daily` covers the last 14 UTC days, oldest first, with today last.
+
 ### `GET /api/users`
 
 `{ "items": UserSummary[] }`

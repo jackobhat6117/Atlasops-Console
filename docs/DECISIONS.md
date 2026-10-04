@@ -82,3 +82,14 @@ Details:
 **Why:**
 - **Reads:** loaded data stays on screen under an "offline" banner, a first load shows "You're offline" instead of an endless skeleton, and everything refreshes on reconnect.
 - **Writes** fail immediately with the normal network error and roll back, instead of being queued silently and firing minutes later. A status change the user believes failed must not apply later.
+
+## 10. Response times derived from the audit log, reported as median and p90
+
+**Decision:** time to acknowledge and time to resolve (the MTTA / MTTR family) are computed from the server-recorded activity log, by severity, over incidents created in the last 30 days. The dashboard shows the median and p90, not only the mean.
+
+**Why:**
+- No new data has to be stored: the audit trail already has every transition with a timestamp. That's how a real system derives these numbers from an event store.
+- A single incident stuck open for days skews a mean badly. The median shows the typical experience, and p90 shows the bad tail.
+- The definitions are explicit, because metrics are only useful when everyone agrees on them. "Acknowledged" means the first move out of Triggered (a human responded). "Resolved" means the first resolution; reopening doesn't reset the clock.
+
+**Trade-off:** the window is limited to the in-memory history. Long-range reporting would need a persistent event store, or precomputed daily rollups on the backend.

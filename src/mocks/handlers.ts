@@ -14,6 +14,7 @@ import {
 import { mockConfig } from './config'
 import {
   findIncident,
+  getAllActivity,
   getAllIncidents,
   getIncidentActivity,
   nextIncidentId,
@@ -22,6 +23,7 @@ import {
   saveIncident,
   touch,
 } from './db'
+import { computeResponseMetrics, parseWindowDays } from './metrics'
 import { countChangedSince, queryIncidents } from './query'
 import { CURRENT_USER, SERVICES, USERS } from './seed'
 import { excerpt } from './seed-activity'
@@ -139,6 +141,13 @@ function dashboardSummary(incidents: Incident[]) {
 }
 
 export const handlers = [
+  http.get('/api/metrics/response', async ({ request }) => {
+    const simulated = await simulateNetwork(request)
+    if (simulated) return simulated
+    const days = parseWindowDays(new URL(request.url).searchParams.get('days'))
+    return HttpResponse.json(computeResponseMetrics(getAllIncidents(), getAllActivity(), { days }))
+  }),
+
   http.get('/api/dashboard/summary', async ({ request }) => {
     const simulated = await simulateNetwork(request)
     if (simulated) return simulated
