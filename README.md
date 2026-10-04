@@ -1,275 +1,162 @@
-# AtlasOps Incident Management Console
+# AtlasOps
 
-A frontend for operations teams to monitor, investigate and manage service incidents. Built with React and TypeScript, against a deterministic mock API.
+**Incident management console for operations teams.** Triage what needs a response, investigate incidents, coordinate ownership and record findings, and keep working when the network is slow, failing or offline.
 
-> **Status:** submitted. All required screens, behaviors and tests are complete. Known limitations are listed honestly in [Incomplete Work](#8-incomplete-work).
+[![CI](https://github.com/jackobhat6117/Atlasops-Console/actions/workflows/ci.yml/badge.svg)](https://github.com/jackobhat6117/Atlasops-Console/actions/workflows/ci.yml)
 
-- **Live demo:** _TBD (add the Vercel URL after deploying)_
-- **Repository:** https://github.com/jackobhat6117/Atlasops-Console
-- **Mock API reference:** [docs/API.md](docs/API.md)
+**Live demo:** _add the Vercel URL_ · **Repository:** [jackobhat6117/Atlasops-Console](https://github.com/jackobhat6117/Atlasops-Console) · **Docs:** [Architecture](docs/ARCHITECTURE.md) · [Decisions](docs/DECISIONS.md) · [Quality](docs/QUALITY.md) · [API](docs/API.md)
+
+### Highlights
+
+- **Triage dashboard:** open, critical and unassigned queues, status mix, attention table and service posture.
+- **Incident list for 1,000+ incidents:** debounced search, multi-filters, sorting and pagination, all kept in the URL so views are shareable and survive reload.
+- **Incident detail:** optimistic status changes with rollback and conflict detection, assignment, notes, and a server-recorded activity log.
+- **Create incident:** inline and summarized validation, live preview, duplicate-submit protection and an unsaved-changes guard.
+- **Live and resilient:** change notices from teammates' edits, offline awareness, retries for transient failures, and user-safe error messages.
+- **Accessible and themable:** keyboard-first, screen-reader announcements, WCAG AA contrast, and Light / Dark / System themes.
+
+### Quick start
+
+```bash
+npm install
+npm run dev        # http://localhost:5173
+```
+
+No backend or secrets needed. The API runs in the browser.
 
 ---
 
 ## 1. Overview
 
-### What it does
+**Workflows:**
+1. Triage from the dashboard.
+2. Search, filter and sort incidents.
+3. Inspect an incident's details, notes and activity.
+4. Change status and ownership.
+5. Add notes.
+6. Create incidents.
 
-AtlasOps lets support engineers and technical leads:
-
-1. See what needs a response from a triage dashboard: open queues, a status strip, and service posture.
-2. Review incidents quickly in a dense, readable list.
-3. Search, filter and sort incidents, with all list state kept in the URL.
-4. Inspect an incident's details, its notes timeline and its activity log (who changed what, and when).
-5. Change status, manage ownership, add notes and create incidents.
-6. Keep working gracefully when requests are slow, fail or conflict.
-
-### Tech stack
+**Stack:**
 
 | Concern | Choice |
 |---|---|
 | Framework / build | React 19, TypeScript, Vite |
-| Routing and URL state | React Router |
+| Routing and URL state | React Router (data router) |
 | Server state | TanStack Query |
-| Shared client state | Zustand: toast queue and persisted theme preference only |
+| Client state | Zustand (toast queue and theme preference only) |
 | Forms and validation | React Hook Form + Zod |
 | Accessible primitives | Radix UI (Dialog, DropdownMenu) |
-| Styling | Tailwind CSS v4 |
-| Architecture | Feature-Sliced Design (FSD) |
-| Mock API | Mock Service Worker (MSW) |
+| Styling | Tailwind CSS v4 with semantic design tokens |
+| Architecture | Feature-Sliced Design, enforced by ESLint |
+| API | Mock Service Worker (deterministic mock) |
 | Testing | Vitest, React Testing Library, user-event, jest-axe |
-
----
 
 ## 2. Setup
 
-**Requirements:** Node.js 20 or newer (developed on Node 22), npm 10 or newer.
+Requires Node.js 20+ (developed on 22) and npm 10+.
 
 ```bash
-# install
-npm install
-
-# run development server (http://localhost:5173)
-npm run dev
-
-# run tests (once / watch mode)
-npm test
-npm run test:watch
-
-# type-check
-npm run typecheck
-
-# run production build
-npm run build
-
-# check bundle sizes against their budgets (run after a build)
-npm run size
-
-# start production build locally
-npm run preview
+npm install          # install
+npm run dev          # development server
+npm test             # tests (npm run test:watch for watch mode)
+npm run build        # production build (type-checks first)
+npm run preview      # serve the production build
+npm run lint         # lint, including architecture boundaries
+npm run size         # bundle-size budgets (after a build)
 ```
 
-CI (`.github/workflows/ci.yml`) runs lint, type-check, tests, build and the size check on every push and pull request.
+CI runs lint, type-check, tests, build and the bundle budgets on every push and pull request.
 
-### Environment variables
+**Environment variables** (optional; copy `.env.example` to `.env.local`):
 
-No secrets are needed. The app runs entirely against the in-browser mock API.
-
-| Variable | Default | Description |
+| Variable | Default | Purpose |
 |---|---|---|
-| `VITE_MOCK_FAILURE_RATE` | `0.05` | Probability (0–1) that a mock API request fails with a 500. Set to `0` for a failure-free demo. |
-| `VITE_MOCK_LIVE_UPDATES` | `true` | Simulated teammates change a random open incident every ~20 s so real-time updates are visible. Set to `false` for a static demo. |
+| `VITE_MOCK_FAILURE_RATE` | `0.05` | Chance (0–1) that a mock request fails with a 500. `0` for a failure-free demo. |
+| `VITE_MOCK_LIVE_UPDATES` | `true` | Simulated teammates edit open incidents so live updates are visible. |
 
-To override locally, copy the template: `cp .env.example .env.local`. All `.env*` files except `.env.example` are gitignored. Vite reads variables at build time, so restart the dev server or rebuild after changing them.
+**Mock API:**
+- Served by Mock Service Worker: 1,043 seeded incidents, 200–1,200 ms latency, and occasional failures.
+- Development-only `X-Mock-*` headers can force errors, delays and conflicts.
+- Where service workers are blocked, an in-page fallback runs the same handlers.
+- Reference: [docs/API.md](docs/API.md).
 
-### Deployment
-
-The app is a static site, deployed on Vercel from `main`: build `npm run build`, output `dist`. `vercel.json` rewrites unknown paths to `index.html`, so deep links such as `/incidents/INC-1042` work on refresh. Static files, including `mockServiceWorker.js`, are served before the rewrite. No environment variables are required. Any static host works with an equivalent SPA fallback rule (Netlify: `/* /index.html 200`).
-
-### Mock API
-
-There is no backend to run. The API is served by Mock Service Worker inside the browser, using 1,043 seeded incidents, 200–1,200 ms latency and occasional random failures. In development you can force failures, delays and conflicts with `X-Mock-*` request headers. See [docs/API.md](docs/API.md) for the full reference.
-
----
+**Deployment:** a static site on Vercel (`npm run build` → `dist`). `vercel.json` rewrites unknown paths to `index.html`, so deep links work on refresh. Any static host works with an equivalent SPA fallback.
 
 ## 3. Architecture
 
-### Project structure
-
-The code follows [Feature-Sliced Design](https://feature-sliced.design). Layers only import from layers below them, and slices are imported only through their `index.ts` public API. ESLint enforces both rules (`no-restricted-imports` in `eslint.config.js`), so a violation fails `npm run lint`.
-
 ```text
-src/
-  app/        App, router (lazy routes + error boundary), root layout, fallback screens
-  pages/      dashboard, incidents-list, incident-detail, create-incident, not-found
-  widgets/    dashboard-overview, incident-list, incident-notes, incident-activity
-  features/   user actions
-    filter-incidents/        URL-synced search, filter, sort, page
-    change-incident-status/  optimistic status mutation
-    assign-incident/         assign / reassign / unassign
-    add-incident-note/       add an investigation note
-    create-incident/         create form (sections, live preview, unsaved-changes guard)
-    switch-theme/            Light / Dark / System menu
-  entities/   business objects
-    incident/   Zod schemas, list params, status rules, API, query keys, queries, cache helpers
-    user/       user schema, users query
-    service/    services query
-    dashboard/  aggregate summary schema and query
-  shared/     api (HTTP client, ApiError, QueryClient), config (route paths), lib (formatters, hooks),
-              model (toast store, theme store), ui (design system)
-  mocks/      MSW handlers + seeded data (infrastructure, outside the layers)
-  test/       Vitest setup and render helpers (infrastructure, outside the layers)
-docs/
-  API.md      mock API reference
+Route → Page → Widget → Feature hook → Entity API → request() → MSW
 ```
 
-### Component boundaries
+- **Structure:** Feature-Sliced Design layers (`app → pages → widgets → features → entities → shared`). Each slice exposes a public `index.ts`, and ESLint rejects upward or deep imports.
+- **Data fetching:** `request()` validates every response with Zod, times out after 10 s, and maps every failure to a typed `ApiError`. TanStack Query caches with hierarchical keys, deduplicates, cancels stale requests and retries only transient failures.
+- **State ownership:** server data → TanStack Query; list state → the URL; forms → React Hook Form; UI state → `useState`; toasts and theme → Zustand.
+- **URL state:** one sanitizer, shared with the mock API. It drops invalid values and produces a canonical query string that doubles as the cache key.
+- **Forms:** React Hook Form + Zod (the same schemas as the API). Errors are shown inline and summarized, server field errors map onto fields, double submits are blocked, and an unsaved-changes guard protects input.
+- **Error handling:** user-safe messages written on the client, never server text. Route-level error boundaries keep crashes inside the app shell.
+- **Styling:** semantic tokens in one CSS file. Light and dark themes are two sets of values, contrast-checked to WCAG AA.
 
-Each layer has one responsibility. `shared/ui` contains domain-free controls and panels. Entity slices own business schemas, labels, API functions, query keys and small representations such as status badges. Feature slices own one user action and its mutation behavior. Widgets compose entities and features into substantial page regions: for example, `IncidentNotes` combines the entity note timeline with the add-note feature. Pages own route-level loading/error states and arrange widgets; `app` owns routing and providers.
-
-Slices expose a deliberate `index.ts` public API. ESLint prevents cross-slice deep imports and upward dependencies. The dashboard uses an aggregate endpoint and its own entity slice rather than downloading all paginated incidents or importing mock seed data into application code.
-
-### Data-fetching strategy
-
-- **Client:** `shared/api/request()` wraps `fetch`. It validates every response with a Zod schema (the API is a trust boundary), applies a 10 s timeout, and accepts a caller `AbortSignal`.
-- **Caching:** TanStack Query with hierarchical keys (`['incidents', 'list', <query>]`, `['incidents', 'detail', id]`). Data is fresh for 30 s, so going back to a list or incident you just saw costs no request. Identical in-flight queries are deduplicated.
-- **Stale responses:** the list key is the canonical URL query string. When search or filters change, TanStack aborts the old request through the signal passed to `fetch`, so an older search can never overwrite a newer one. The previous page stays visible while the next one loads (`keepPreviousData`).
-- **Retries:** only transient failures (network, timeout, 5xx) are retried, up to 2 times. 4xx errors and cancellations are final. Mutations are never retried automatically, because a retried POST could create a duplicate.
-- **Invalidation:** after a mutation, the affected detail entry is updated directly and the lists are invalidated, so every cached page reconciles with the server.
-
-### Measured bundle sizes
-
-Measured on the production build (gzip, `npm run size`). The budgets fail CI when exceeded.
-
-| Bundle | Size | Budget | Notes |
-|---|---|---|---|
-| Initial JS (first paint) | 173.5 kB | 200 kB | React, router, TanStack Query, Radix, Zod, app shell |
-| Initial CSS | 8.4 kB | 12 kB | Tailwind output |
-| Largest lazy chunk | 13.0 kB | 16 kB | Each page loads its own route chunk on navigation |
-| Mock API chunk | 157.9 kB | 180 kB | MSW, handlers and seed data |
-
-The mock API chunk is the single largest download, almost as big as the whole app. It exists only because this demo has no backend, so it is budgeted separately and would disappear with a real API. Everything else is what a user of the product would actually pay for.
-
-### State ownership
-
-| State type | Where it lives |
-|---|---|
-| Remote server state | TanStack Query cache |
-| URL state (search, filters, sort, page) | `URLSearchParams` via React Router |
-| Form state | React Hook Form |
-| Local component state | `useState` |
-| Shared client state | Zustand: toast queue and persisted theme preference |
-
-### URL state handling
-
-`entities/incident/model/list-params.ts` is the only code that converts between the URL and typed list params. The UI and the mock API both use it.
-
-- URL input is untrusted. Unknown statuses, severities and sort fields are dropped, malformed service names are rejected, numbers are clamped, and search is capped at 200 characters. It never throws.
-- Serialization is canonical: defaults are omitted and lists are kept in a fixed order. Equivalent URLs therefore share one cache entry.
-- `features/filter-incidents` exposes `useIncidentListParams()`. Changing search, a filter or the sort resets to page 1. Typing a search replaces the history entry instead of pushing a new one.
-
-### Form architecture
-
-Forms use React Hook Form with `zodResolver`, so the Zod schemas that validate the API also validate the forms.
-
-- **Create incident** (`features/create-incident`):
-  - Validates on submit, then again on every change.
-  - Shows errors next to each field (`aria-invalid` + `aria-describedby`) and in an error summary whose entries focus their field. Focus moves to the first invalid field.
-  - Server `400` field errors are mapped onto the same fields. Other failures show an alert, and the entered data is always kept.
-  - Double submission is blocked: the button shows a busy state and the submit handler ignores calls while a request is in flight.
-  - Leaving with unsaved input opens a confirmation dialog (React Router `useBlocker`, plus `beforeunload` for tab close). On success it redirects to the new incident, replacing the form's history entry.
-- **Add note** (`features/add-incident-note`):
-  - Trims the text and rejects empty or whitespace-only notes on the client; the server rejects them too.
-  - Clears the text only after the server confirms, so a failed submission keeps what you typed. Ctrl/⌘+Enter submits.
-
-### Error handling
-
-Every failure becomes an `ApiError` with a `kind`: `http`, `network`, `timeout`, `aborted` or `invalid-response`. For HTTP errors it also carries `status`, `code`, `fieldErrors` and `currentVersion`. Error bodies are parsed defensively, because they are untrusted input.
-
-The UI shows only messages from `getErrorMessage()`. These are written on the client and never copied from the server, so stack traces and internal details can't reach the user.
-
-| Case | Handling |
-|---|---|
-| 400 | Field errors shown next to the matching form fields |
-| 404 | "Not found" state |
-| 409 | Optimistic change rolled back, with a "changed by someone else" message |
-| 500, network, timeout | Retried automatically for queries; error toast and rollback for mutations |
-| Aborted | Ignored, since it means a newer request replaced this one |
-
-### Testing strategy
-
-Most tests are page-level integration tests. They render the real route tree (`renderApp(url)`) against the real MSW handlers, and interact the way a user would with Testing Library and user-event. Smaller unit tests cover the pure logic: URL param parsing, the HTTP client's error mapping, the mutation hooks' optimistic/rollback behavior, and the mock API contract. Mocks are deterministic: the data is seeded, there's no latency, and random failures are off. Individual tests inject failures with `server.use(...)`.
-
-### Styling approach
-
-Tailwind CSS v4 with semantic design tokens (`--color-surface`, `--color-muted`, `--color-accent`, plus status families like `danger`, `warning`, `high`, `assign`, each with text, soft, line and solid variants) defined once in `src/index.css`. Components never use raw palette classes, so **light and dark themes** are just two sets of token values. `<html data-theme="dark"|"light">` switches between them. Every text/background pair was checked against WCAG AA (4.5:1) in both themes; that check also caught and fixed a low-contrast `text-subtle` in the original light theme. Users choose Light, Dark or System (follows the OS, live). The choice is persisted, and an inline script in `index.html` applies it before first paint, so there's no flash of the wrong theme. Shared primitives live in `shared/ui`. Accessible behavior comes from Radix UI where it is hard to get right (menus) and from native elements where they already work (`<select>`, `<table>`). Reduced-motion preferences are respected globally.
-
----
+Full details: **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
 
 ## 4. Important Decisions
 
-1. **MSW instead of a hosted backend.** The assignment needs realistic latency, failures and mutations but no private infrastructure. MSW keeps the browser, deployed demo and tests on one API contract while preserving real `fetch` behavior and cancellation. The trade-off is browser-only, reload-reset persistence and a service-worker dependency; startup failure therefore has a dedicated fallback screen.
-2. **TanStack Query for server state; Zustand only for genuinely client-side state.** Nearly all "global" state here is server data (TanStack Query) or list state (the URL). Two client-only pieces remain. The toast queue is pushed from mutation callbacks outside React and read by one `aria-live` region. The theme preference is read by the switcher and the theme sync, and persisted with Zustand's `persist` middleware, which validates the stored value because localStorage is untrusted. Zustand handles both in a few lines without a provider. Putting server data or filters in it would duplicate the cache and the URL.
-3. **Feature-Sliced Design.** It gives clear, enforceable boundaries: entities own data and API, features own user actions, and pages compose them. The trade-off is more folders and `index.ts` files than a small app strictly needs.
-4. **One shared list-params parser.** The UI and the mock API use the same sanitizer, so the client and the "server" can't disagree about what a URL means.
-5. **Table on desktop, cards on phones.** A real `<table>` gives the densest readable layout, along with native header and cell semantics and `aria-sort`. Below 768px it would need horizontal scrolling, so phones get a card list instead. Only one layout is mounted (`useMediaQuery`), not both with one hidden by CSS, so the DOM and accessibility tree never contain duplicate rows.
-6. **Optimistic status, pessimistic everything else.** The status change is optimistic: it patches the detail and every cached list page, rolls back on error, and sends `version` so concurrent edits return 409 instead of silently overwriting. Assign, note and create wait for the server. Assignment depends on server-side user validation, and a note must never look saved when it wasn't.
-7. **Server-recorded activity log.** The audit history is written by the API on every mutation, not assembled on the client, so it is consistent across tabs and users, the way a real audit trail must be. It is a separate endpoint (`/incidents/:id/activity`), so the incident payload stays small, and its query key is nested under the incident's detail key, so the existing invalidations refresh it after every change. Entries are a Zod discriminated union: each type (`created`, `status_changed`, `assignee_changed`, `note_added`) carries exactly the data it needs.
-8. **Real-time through polling and a notice, not live rows.** The brief allows simulated polling, and an SSE stream cannot work through the in-page `fetch` fallback anyway. The list polls a cheap `GET /api/incidents/changes?since=…` (a count, using the list's own filters) every 15 s and shows "N incidents in this view have changed. Refresh" instead of swapping data, because rows that reorder under a cursor are worse than a slightly stale list. The dashboard and sidebar counts are glance views, so they simply refetch every 30 s. All polling pauses in background tabs and offline. The change query lives outside `incidentKeys.all`, so a user's own edit, which invalidates that tree, never triggers the notice. Because the mock has no other users, `src/mocks/live-activity.ts` simulates teammates through the same write path as the handlers (versions, timestamps, audit log), which also makes the 409 conflict path reachable in the demo.
-9. **Offline: pause reads, refuse writes.** TanStack Query pauses reads offline and resumes on reconnect, so loaded data stays on screen under an "offline" banner, a first load shows "You're offline" instead of an endless skeleton, and everything refreshes on reconnect. Writes do the opposite on purpose: they fail immediately with the normal network error and roll back, rather than being queued silently and firing minutes later. A status change the user believes failed must not apply later.
+1. **MSW instead of a hosted backend:** one API contract for the browser, the demo and the tests.
+2. **TanStack Query and the URL hold almost all state;** Zustand holds only toasts and theme.
+3. **Feature-Sliced Design, enforced by lint** rather than by convention.
+4. **One URL parser shared by the UI and the mock,** so they can never disagree.
+5. **Table on desktop, cards on phones,** with only one layout mounted.
+6. **Optimistic status changes with versioned conflict detection;** everything else waits for the server.
+7. **A server-recorded activity log,** consistent across users like a real audit trail.
+8. **Real-time by polling and a "changed — Refresh" notice,** never rows moving under the cursor.
+9. **Offline: reads pause, writes fail fast,** never silently queued.
 
----
+The reasoning and trade-offs for each: **[docs/DECISIONS.md](docs/DECISIONS.md)**.
 
 ## 5. Performance
 
-- **Dataset size:** 1,043 deterministic incidents. The list API only returns the requested page (25 by default); list responses omit note bodies.
-- **Issues identified:** rendering or aggregating the full dataset in React would add unnecessary work, and mounting desktop and mobile list variants together would duplicate interactive DOM. A chart library on the home page would also ship a large dependency for counts the list filters already express.
-- **Optimizations implemented:** server-side-style filtering/sorting/pagination in the mock; stable query keys and request cancellation; 30-second caching and in-flight deduplication; previous-page placeholders; memoized table rows; only one responsive list variant mounted; route-level lazy loading. The dashboard requests one compact summary and draws the status mix with CSS, so the home route does not download a chart library.
-- **Optimizations intentionally avoided:** virtualization is unnecessary for 25-row pages, and broad component memoization was avoided without measured evidence. The simple deterministic aggregation scans 1,043 in-memory records, which is inexpensive and keeps the mock explainable.
+- **Dataset:** 1,043 incidents. Only the requested page is fetched and rendered (25 rows by default).
+- **Optimizations:** request cancellation and deduplication, 30 s caching, memoized rows, a single responsive layout, route-level code splitting, and a CSS-only dashboard with no chart library.
+- **Intentionally avoided:** virtualization (unnecessary at 25 rows) and memoization without measured evidence.
+- **Budgets enforced in CI (gzip):** initial JS 176 kB / 200 kB, CSS 7.9 kB / 12 kB, largest route chunk 13 kB / 16 kB.
 
----
+Details and measurements: **[docs/QUALITY.md](docs/QUALITY.md#performance)**.
 
 ## 6. Accessibility
 
-- **Keyboard behavior:** a skip link (first Tab stop, slides into view when focused) leads to the main content. Each incident's title is a real link, and ArrowUp/ArrowDown/Home/End move between rows. Filter menus support arrow keys, typeahead and Esc. Search commits on Enter and clears on Escape. Sortable headers are buttons.
-- **Focus management:** each page moves focus to its `<h1>` when it opens. After a status change, focus moves to the new status, because the button that was clicked is replaced. The discard dialog traps focus, gives initial focus to the safe action, closes on Escape, and returns focus to the element that opened it. After returning from an incident, focus goes back to that incident's row, which is marked "Last viewed" in text, not by color alone. Closing a filter or theme menu returns focus to its trigger. Focus rings are visible for keyboard users everywhere, including the highlighted item inside menus (outline plus tint, not a near-invisible background change).
-- **Form error handling:** every field has a visible label. Errors are linked to their field with `aria-describedby`, marked with `aria-invalid`, shown as text with an icon (not color alone), summarized in an alert after submit, and focus moves to the first invalid field. Character counters show limits.
-- **Tooling:** jest-axe in every page test, plus an app-wide sweep (`src/app/accessibility.test.tsx`, 24 scans). It covers every route at desktop, tablet and phone widths, every route in the dark theme, open menus, the discard dialog and error states. Color contrast can't be computed in jsdom, so every theme token pair was checked numerically against WCAG AA (4.5:1) in both themes. I also did manual keyboard passes in a real browser.
-- **Announcements:** result counts are announced politely once a search settles. Error toasts are announced assertively and other toasts politely. Page titles change on navigation. Conditional notices ("N incidents changed", "couldn't refresh", "you're offline") are announced through an always-mounted `LiveMessage`, because screen readers often ignore a live region that is inserted together with its content.
-- **Known limitations:** The status strip uses color plus a text link for each status. Returning from a detail page restores list context through router state; refreshing a deep-linked detail page loses that transient return state and falls back to the default list.
+- **Keyboard:** fully operable, with a skip link, arrow-key row navigation and visible focus everywhere, including inside menus.
+- **Focus:** pages focus their heading, the dialog traps and returns focus, and returning from an incident focuses its row.
+- **Forms and status:** errors are linked to fields, summarized, and focus the first invalid field. Status and severity never rely on color alone.
+- **Announcements:** results, mutation outcomes and change notices are announced through always-mounted live regions.
+- **Verified by:** jest-axe in every page test plus a 24-scan sweep (3 widths, dark theme, menus, dialog, error states), numeric WCAG AA contrast checks of the theme tokens, and manual keyboard passes.
 
----
+Details and limitations: **[docs/QUALITY.md](docs/QUALITY.md#accessibility)**.
 
 ## 7. Testing
 
-- **Covered:** mock API contracts and failure controls; HTTP error/timeout/abort mapping; URL parsing; optimistic status success, rollback and conflict; dashboard aggregates and rendering; list search/filter/sort/pagination/keyboard behavior; detail mutation workflows and safe note rendering; create validation, server errors, duplicate-submit prevention and dialog focus; the change-notice polling flow and simulated-teammate writes; offline banner, first-load-offline and refused writes; page-level axe smoke tests and an app-wide accessibility sweep across layouts, themes, overlays and error states.
-- **Not covered:** visual regression across real browsers, service-worker registration itself, deployment routing and production monitoring. Those require browser/E2E or deployment infrastructure beyond jsdom integration tests.
-- **Why these levels:** page tests exercise the real router, TanStack Query and MSW handlers as users see them, while focused unit tests cover pure parsing and failure branches. This gives high confidence in required workflows without coupling tests to component internals.
+- **Approach:** mostly page-level integration tests that render the real routes against the real mock API and interact like a user. Unit tests cover pure logic.
+- **Coverage:** 132 tests, including every required behavior: list rendering, search and filtering, successful and failed mutations with rollback, form validation, and keyboard and dialog focus.
+- **Not covered:** cross-browser visual regression and end-to-end tests against a deployed backend.
 
----
+Details: **[docs/QUALITY.md](docs/QUALITY.md#testing)**.
 
-## 8. Incomplete Work
+## 8. Incomplete work and roadmap
 
-- [x] Mock API (MSW handlers, seeded data, contract tests)
-- [x] Data layer (HTTP client, query hooks, mutations, URL state, toast store)
-- [x] Incident list (search, filters, sort, pagination, URL state, all list states, keyboard rows, responsive)
-- [x] Routing (lazy pages, route error boundary, 404)
-- [x] Incident details (status change, assign/unassign, notes, 404, stale/error states)
-- [x] Activity log / audit history (optional enhancement): server-recorded, filterable, refreshes after every change
-- [x] Create incident (validation, error summary, server errors, duplicate-submit guard, unsaved-changes dialog)
-- [x] Triage dashboard (aggregate endpoint, queue links, status strip, attention table, service posture)
-- [x] Automated tests (unit, hook, page integration, axe)
-- [ ] Deployment (Vercel, SPA rewrite in `vercel.json`): tick after verifying the live URL
-- [x] Real-time updates by polling (change notice on the list, refreshing dashboard and counts); the SSE endpoint `GET /api/incidents/events` is intentionally not implemented
-- [x] Offline awareness (banner, paused reads, refused writes, refresh on reconnect)
-- [x] CI workflow and bundle-size budgets
-- [x] API reference (`docs/API.md`)
+**Known limitations:**
+- Data is in-memory and resets on reload.
+- Authentication and authorization are out of scope.
+- Live updates use polling; the optional Server-Sent Events endpoint is not implemented.
+- Dashboard figures are snapshots, because the model has no historical time series.
+- Opening an incident directly from a shared link falls back to the default list on return.
+- No formal screen-reader QA pass yet.
 
 **Known bugs:** none known.
-**Shortcuts:** data is in-memory and resets on reload; authentication and authorization are intentionally out of scope, and the SSE stream is replaced by polling. Dashboard trends are distribution snapshots because the supplied model has no historical time-series store.
-**What I would implement next:** deploy and verify SPA routing/service-worker behavior in a real browser, then add a small Playwright smoke suite to the existing CI. With a real backend, persist list return state in the URL or session storage and add historical incident trends.
 
----
+**Next:**
+1. Playwright smoke tests in CI against the deployed build.
+2. Server-Sent Events when a real backend exists.
+3. Persist the return-to-list context in the URL.
+4. Historical incident trends.
 
-## Third-party assets
+## License and assets
 
-No third-party assets (images, icons, fonts) are copied into this repository. Third-party code is used only as npm dependencies, under their own licenses.
+No third-party assets are included. The logo and favicon are original. Third-party code is used only as npm dependencies, under their own licenses.

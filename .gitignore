@@ -28,3 +28,4 @@ dist-ssr
 
 # Local AI tooling config
 .claude/
+CLAUDE.md
