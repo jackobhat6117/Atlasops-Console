@@ -2,10 +2,10 @@
 
 A frontend for operations teams to monitor, investigate and manage service incidents. Built with React and TypeScript, against a deterministic mock API.
 
-> **Status:** in progress. This README is updated as each part lands. Anything not finished yet is listed in [Incomplete Work](#8-incomplete-work).
+> **Status:** submitted. All required screens, behaviors and tests are complete. Known limitations are listed honestly in [Incomplete Work](#8-incomplete-work).
 
-- **Live demo:** _TBD_
-- **Repository:** _TBD_
+- **Live demo:** _TBD (add the Vercel URL after deploying)_
+- **Repository:** https://github.com/jackobhat6117/Atlasops-Console
 - **Mock API reference:** [docs/API.md](docs/API.md)
 
 ---
@@ -32,7 +32,7 @@ AtlasOps lets support engineers and technical leads:
 | Server state | TanStack Query |
 | Shared client state | Zustand: toast queue and persisted theme preference only |
 | Forms and validation | React Hook Form + Zod |
-| Accessible primitives | Radix UI (Dialog, Select) |
+| Accessible primitives | Radix UI (Dialog, DropdownMenu) |
 | Styling | Tailwind CSS v4 |
 | Architecture | Feature-Sliced Design (FSD) |
 | Mock API | Mock Service Worker (MSW) |
@@ -81,6 +81,10 @@ No secrets are needed. The app runs entirely against the in-browser mock API.
 
 To override locally, copy the template: `cp .env.example .env.local`. All `.env*` files except `.env.example` are gitignored. Vite reads variables at build time, so restart the dev server or rebuild after changing them.
 
+### Deployment
+
+The app is a static site, deployed on Vercel from `main`: build `npm run build`, output `dist`. `vercel.json` rewrites unknown paths to `index.html`, so deep links such as `/incidents/INC-1042` work on refresh. Static files, including `mockServiceWorker.js`, are served before the rewrite. No environment variables are required. Any static host works with an equivalent SPA fallback rule (Netlify: `/* /index.html 200`).
+
 ### Mock API
 
 There is no backend to run. The API is served by Mock Service Worker inside the browser, using 1,043 seeded incidents, 200–1,200 ms latency and occasional random failures. In development you can force failures, delays and conflicts with `X-Mock-*` request headers. See [docs/API.md](docs/API.md) for the full reference.
@@ -97,19 +101,21 @@ The code follows [Feature-Sliced Design](https://feature-sliced.design). Layers 
 src/
   app/        App, router (lazy routes + error boundary), root layout, fallback screens
   pages/      dashboard, incidents-list, incident-detail, create-incident, not-found
-  widgets/    dashboard overview, incident list, incident notes
+  widgets/    dashboard-overview, incident-list, incident-notes, incident-activity
   features/   user actions
     filter-incidents/        URL-synced search, filter, sort, page
     change-incident-status/  optimistic status mutation
     assign-incident/         assign / reassign / unassign
     add-incident-note/       add an investigation note
-    create-incident/         create mutation
+    create-incident/         create form (sections, live preview, unsaved-changes guard)
+    switch-theme/            Light / Dark / System menu
   entities/   business objects
     incident/   Zod schemas, list params, status rules, API, query keys, queries, cache helpers
     user/       user schema, users query
     service/    services query
+    dashboard/  aggregate summary schema and query
   shared/     api (HTTP client, ApiError, QueryClient), config (route paths), lib (formatters, hooks),
-              model (toast store), ui (design system)
+              model (toast store, theme store), ui (design system)
   mocks/      MSW handlers + seeded data (infrastructure, outside the layers)
   test/       Vitest setup and render helpers (infrastructure, outside the layers)
 docs/
@@ -151,7 +157,7 @@ The mock API chunk is the single largest download, almost as big as the whole ap
 | URL state (search, filters, sort, page) | `URLSearchParams` via React Router |
 | Form state | React Hook Form |
 | Local component state | `useState` |
-| Shared client state | Zustand: toast / announcement queue only |
+| Shared client state | Zustand: toast queue and persisted theme preference |
 
 ### URL state handling
 
@@ -252,13 +258,13 @@ Tailwind CSS v4 with semantic design tokens (`--color-surface`, `--color-muted`,
 - [x] Create incident (validation, error summary, server errors, duplicate-submit guard, unsaved-changes dialog)
 - [x] Triage dashboard (aggregate endpoint, queue links, status strip, attention table, service posture)
 - [x] Automated tests (unit, hook, page integration, axe)
-- [ ] Deployment
+- [ ] Deployment (Vercel, SPA rewrite in `vercel.json`): tick after verifying the live URL
 - [x] Real-time updates by polling (change notice on the list, refreshing dashboard and counts); the SSE endpoint `GET /api/incidents/events` is intentionally not implemented
 - [x] Offline awareness (banner, paused reads, refused writes, refresh on reconnect)
 - [x] CI workflow and bundle-size budgets
 - [x] API reference (`docs/API.md`)
 
-**Known bugs:** _none recorded yet._
+**Known bugs:** none known.
 **Shortcuts:** data is in-memory and resets on reload; authentication and authorization are intentionally out of scope, and the SSE stream is replaced by polling. Dashboard trends are distribution snapshots because the supplied model has no historical time-series store.
 **What I would implement next:** deploy and verify SPA routing/service-worker behavior in a real browser, then add a small Playwright smoke suite to the existing CI. With a real backend, persist list return state in the URL or session storage and add historical incident trends.
 
