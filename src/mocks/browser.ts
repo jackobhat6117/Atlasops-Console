@@ -1,5 +1,5 @@
-import { getResponse } from 'msw'
 import { setupWorker } from 'msw/browser'
+import { createApiFetch } from './api-fetch'
 import { handlers } from './handlers'
 import { startLiveActivity } from './live-activity'
 
@@ -24,39 +24,15 @@ export async function startMockApi(): Promise<MockApiMode> {
 }
 
 async function startTransport(): Promise<MockApiMode> {
+  const nativeFetch = window.fetch.bind(window)
   try {
     await worker.start({ onUnhandledRequest: 'bypass', quiet: import.meta.env.PROD })
+    // The worker can stop later (idle, sleep); this keeps the API answering when it does.
+    window.fetch = createApiFetch(nativeFetch, 'service-worker')
     return 'service-worker'
   } catch {
-    installInPageFetchFallback()
+    window.fetch = createApiFetch(nativeFetch, 'in-page')
     if (import.meta.env.DEV) console.info('[mock api] Service worker unavailable; using in-page fetch fallback.')
     return 'in-page'
-  }
-}
-
-function abortError() {
-  return new DOMException('The operation was aborted.', 'AbortError')
-}
-
-function installInPageFetchFallback() {
-  const nativeFetch = window.fetch.bind(window)
-
-  window.fetch = async (input, init) => {
-    const request = new Request(input, init)
-    const url = new URL(request.url)
-    if (url.origin !== window.location.origin || !url.pathname.startsWith('/api/')) {
-      return nativeFetch(input, init)
-    }
-    if (request.signal.aborted) throw abortError()
-
-    // Behave like real fetch: abort rejects immediately, even mid-"latency".
-    const aborted = new Promise<never>((_, reject) =>
-      request.signal.addEventListener('abort', () => reject(abortError()), { once: true }),
-    )
-    const response = await Promise.race([getResponse(handlers, request), aborted])
-    if (!response) return nativeFetch(input, init)
-    // HttpResponse.error() simulates a network failure: real fetch rejects with TypeError.
-    if (response.type === 'error') throw new TypeError('Failed to fetch')
-    return response
   }
 }
