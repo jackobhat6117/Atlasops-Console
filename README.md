@@ -4,7 +4,9 @@
 
 [![CI](https://github.com/jackobhat6117/Atlasops-Console/actions/workflows/ci.yml/badge.svg)](https://github.com/jackobhat6117/Atlasops-Console/actions/workflows/ci.yml)
 
-**Live demo:** _add the Vercel URL_ · **Repository:** [jackobhat6117/Atlasops-Console](https://github.com/jackobhat6117/Atlasops-Console) · **Docs:** [Architecture](docs/ARCHITECTURE.md) · [Decisions](docs/DECISIONS.md) · [Quality](docs/QUALITY.md) · [API](docs/API.md)
+**Live demo:** [atlasops-console.vercel.app](https://atlasops-console.vercel.app) · **Repository:** [jackobhat6117/Atlasops-Console](https://github.com/jackobhat6117/Atlasops-Console) · **Docs:** [Architecture](docs/ARCHITECTURE.md) · [Decisions](docs/DECISIONS.md) · [Quality](docs/QUALITY.md) · [API](docs/API.md)
+
+![AtlasOps overview dashboard: open, critical and unassigned queues, status mix, incidents needing attention and service posture](docs/screenshot-dashboard.webp)
 
 ### Highlights
 
