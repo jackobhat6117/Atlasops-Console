@@ -32,7 +32,7 @@ describe('App navigation', () => {
     expect(screen.getAllByRole('navigation', { name: 'Main' })).toHaveLength(1)
     expect(within(nav).getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page')
     expect(within(nav).getByRole('link', { name: 'Incidents' })).toBeInTheDocument()
-    expect(screen.queryByText('Demo environment')).not.toBeInTheDocument()
+    expect(screen.queryByText('Demo data')).not.toBeInTheDocument()
     expect(await screen.findByRole('heading', { name: 'Needs attention' })).toBeInTheDocument()
   })
 })

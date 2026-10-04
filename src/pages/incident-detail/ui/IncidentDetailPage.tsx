@@ -9,13 +9,14 @@ import {
   LiveMessage,
   Button,
   OfflineMessage,
+  PageHeader,
   RefreshIcon,
   SearchIcon,
   StateMessage,
 } from '@/shared/ui'
 import { IncidentActivity } from '@/widgets/incident-activity'
 import { IncidentNotes } from '@/widgets/incident-notes'
-import { BackToIncidentsLink } from './BackToIncidentsLink'
+import { IncidentBreadcrumbs } from './IncidentBreadcrumbs'
 import { IncidentDetailSkeleton } from './IncidentDetailSkeleton'
 import { IncidentProperties } from './IncidentProperties'
 
@@ -38,7 +39,7 @@ export function IncidentDetailPage() {
 
   return (
     <div className="page-shell">
-      <BackToIncidentsLink incidentId={incidentId} />
+      <IncidentBreadcrumbs incidentId={incidentId} />
 
       {query.isPending ? (
         query.fetchStatus === 'paused' ? (
@@ -83,19 +84,13 @@ export function IncidentDetailPage() {
             </Banner>
           )}
 
-          <header className="page-header">
-            <div>
-              <p className="eyebrow font-mono">{incident.id}</p>
-              <h1 ref={headingRef} tabIndex={-1} className="page-title break-words outline-none">
-                {incident.title}
-              </h1>
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                <SeverityBadge severity={incident.severity} />
-                <StatusBadge status={incident.status} />
-                <span className="rounded-md bg-surface-muted px-2 py-0.5 text-muted">{incident.service}</span>
-              </div>
+          <PageHeader title={incident.title} headingRef={headingRef}>
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <SeverityBadge severity={incident.severity} />
+              <StatusBadge status={incident.status} />
+              <span className="rounded-md bg-surface-muted px-2 py-0.5 text-muted">{incident.service}</span>
             </div>
-          </header>
+          </PageHeader>
 
           {/* DOM order puts actions before content on phones; on desktop they sit in the right column. */}
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">

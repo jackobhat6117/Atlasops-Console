@@ -202,7 +202,9 @@ describe('Incident detail page', () => {
   it('shows a not-found state for an unknown incident', async () => {
     renderApp('/incidents/INC-0')
     expect(await screen.findByText('Incident not found')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Back to incidents' })).toHaveAttribute('href', '/incidents')
+    const breadcrumb = screen.getByRole('navigation', { name: 'Breadcrumb' })
+    expect(within(breadcrumb).getByRole('link', { name: 'Incidents' })).toHaveAttribute('href', '/incidents')
+    expect(within(breadcrumb).getByText('INC-0')).toHaveAttribute('aria-current', 'page')
   })
 
   it('has no detectable accessibility violations', async () => {

@@ -60,7 +60,8 @@ describe('Accessibility sweep', () => {
     await expectNoViolations(container, { overlay: true })
   })
 
-  it('an open theme menu has no violations', async () => {
+  it('an open theme menu (compact header) has no violations', async () => {
+    setViewportWidth(375)
     const { container, user } = renderApp('/incidents')
     await user.click(await screen.findByRole('button', { name: /^Theme:/ }))
     await screen.findByRole('menu')

@@ -10,12 +10,47 @@ const OPTIONS: Record<ThemePreference, { label: string; Icon: typeof SunIcon }> 
 }
 
 /**
- * Light / Dark / System menu (Radix DropdownMenu radio group: arrow keys,
+ * Sidebar footer: three icon buttons, one click to switch, current choice
+ * marked with aria-pressed (state is visible without opening anything).
+ */
+function ThemeSegmented() {
+  const { preference, resolved, setPreference } = useTheme()
+  return (
+    <div role="group" aria-label="Theme" className="flex rounded-lg bg-surface-muted p-0.5 ring-1 ring-line">
+      {THEME_PREFERENCES.map((value) => {
+        const { label, Icon } = OPTIONS[value]
+        const active = preference === value
+        const name = value === 'system' ? `System theme (currently ${resolved})` : `${label} theme`
+        return (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={active}
+            aria-label={name}
+            title={name}
+            onClick={() => setPreference(value)}
+            className={cn(
+              'grid size-7 place-items-center rounded-md transition-colors',
+              active ? 'bg-surface text-fg shadow-sm ring-1 ring-line' : 'text-subtle hover:text-fg',
+            )}
+          >
+            <Icon size={14} />
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+/**
+ * Theme control. `segmented` (sidebar footer): one-click buttons. `icon` (compact
+ * header): a Light / Dark / System menu (Radix DropdownMenu radio group: arrow keys,
  * typeahead, Esc, focus returns to the trigger). The trigger's accessible name
  * states the current choice, and what "System" resolved to.
  */
-export function ThemeSwitcher({ variant = 'icon' }: { variant?: 'icon' | 'row' }) {
+export function ThemeSwitcher({ variant = 'icon' }: { variant?: 'icon' | 'segmented' }) {
   const { preference, resolved, setPreference } = useTheme()
+  if (variant === 'segmented') return <ThemeSegmented />
   const current = OPTIONS[preference]
   const TriggerIcon = resolved === 'dark' ? MoonIcon : SunIcon
   const description = preference === 'system' ? `System (${resolved})` : current.label
@@ -24,23 +59,13 @@ export function ThemeSwitcher({ variant = 'icon' }: { variant?: 'icon' | 'row' }
     <DropdownMenu.Root>
       <DropdownMenu.Trigger
         aria-label={`Theme: ${description}`}
-        className={cn(
-          'inline-flex items-center gap-2 rounded-md text-sm text-muted transition-colors hover:bg-surface-muted hover:text-fg',
-          variant === 'icon' ? 'size-9 justify-center' : 'w-full px-3 py-2',
-        )}
+        className="inline-flex size-9 items-center justify-center rounded-md text-muted transition-colors hover:bg-surface-muted hover:text-fg"
       >
         <TriggerIcon size={16} />
-        {variant === 'row' && (
-          <>
-            <span className="font-medium">Theme</span>
-            <span className="ml-auto text-xs text-subtle">{description}</span>
-          </>
-        )}
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           align="end"
-          side={variant === 'row' ? 'top' : 'bottom'}
           sideOffset={6}
           className="z-50 min-w-40 rounded-lg border border-line bg-surface p-1 text-fg shadow-lg"
         >

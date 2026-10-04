@@ -1,18 +1,15 @@
-import { Link } from 'react-router-dom'
 import { useDashboardSummary } from '@/entities/dashboard'
 import { getErrorMessage } from '@/shared/api'
-import { paths } from '@/shared/config'
-import { formatDateTime, useDocumentTitle } from '@/shared/lib'
+import { formatDateTime, formatRelativeTime, useDocumentTitle } from '@/shared/lib'
 import {
   AlertOctagonIcon,
   Banner,
-  LiveMessage,
   Button,
+  LiveMessage,
   OfflineMessage,
-  PlusIcon,
+  PageHeader,
   RefreshIcon,
   StateMessage,
-  buttonClassName,
 } from '@/shared/ui'
 import { DashboardOverview } from '@/widgets/dashboard-overview'
 
@@ -36,29 +33,22 @@ function DashboardSkeleton() {
 }
 
 export function DashboardPage() {
-  useDocumentTitle('Operations overview')
+  useDocumentTitle('Overview')
   const query = useDashboardSummary()
   const { data } = query
 
   return (
     <div className="page-shell">
-      <header className="page-header">
-        <div>
-          <p className="eyebrow">Operations center</p>
-          <h1 className="page-title">Service health</h1>
-          <p className="page-description">What needs a response right now.</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={() => query.refetch()} loading={query.isFetching} disabled={query.isPending}>
-            <RefreshIcon />
+      <PageHeader
+        title="Overview"
+        meta={data ? `Updated ${formatRelativeTime(new Date(query.dataUpdatedAt))}` : undefined}
+        actions={
+          <Button size="sm" onClick={() => query.refetch()} loading={query.isFetching} disabled={query.isPending}>
+            <RefreshIcon size={14} />
             Refresh
           </Button>
-          <Link to={paths.newIncident} className={buttonClassName({ variant: 'primary' })}>
-            <PlusIcon />
-            New incident
-          </Link>
-        </div>
-      </header>
+        }
+      />
 
       <LiveMessage message={query.isError && data ? "Couldn't refresh the overview. Showing earlier data." : ''} />
       {query.isError && data && (

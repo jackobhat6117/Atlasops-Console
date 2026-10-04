@@ -145,36 +145,4 @@
   .page-shell {
     @apply mx-auto flex w-full max-w-screen-2xl flex-col gap-5 px-4 py-6 sm:px-6 lg:px-8 lg:py-8;
   }
-
-  .page-header {
-    @apply flex flex-col gap-4 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between;
-  }
-
-  .eyebrow {
-    @apply mb-1 text-xs font-semibold tracking-[0.12em] text-accent uppercase;
-  }
-
-  .page-title {
-    @apply text-2xl font-semibold tracking-tight text-fg sm:text-3xl;
-  }
-
-  .page-description {
-    @apply mt-1 max-w-2xl text-sm text-muted;
-  }
-
-  .metric-icon {
-    @apply grid size-10 place-items-center rounded-lg bg-surface-muted text-muted ring-1 ring-line;
-  }
-
-  .metric-icon-accent {
-    @apply bg-accent-soft text-accent ring-accent/15;
-  }
-
-  .metric-icon-danger {
-    @apply bg-danger-soft text-danger ring-danger/15;
-  }
-
-  .metric-icon-warning {
-    @apply bg-warning-soft text-warning ring-warning/15;
-  }
 }

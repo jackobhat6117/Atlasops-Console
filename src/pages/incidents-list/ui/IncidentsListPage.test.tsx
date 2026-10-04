@@ -144,7 +144,7 @@ describe('Incident list page', () => {
     await user.click(link)
     expect(await screen.findByRole('heading', { level: 1, name: title })).toBeInTheDocument()
 
-    await user.click(screen.getByRole('link', { name: 'Back to incidents' }))
+    await user.click(within(screen.getByRole('navigation', { name: 'Breadcrumb' })).getByRole('link', { name: 'Incidents' }))
 
     await findTable()
     expect(location().search).toBe('?severity=high&page=2')

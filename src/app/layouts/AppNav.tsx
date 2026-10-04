@@ -7,6 +7,7 @@ import { cn } from '@/shared/lib'
 import {
   AlertOctagonIcon,
   AlertTriangleIcon,
+  BrandMark,
   DashboardIcon,
   IncidentIcon,
   InboxIcon,
@@ -33,16 +34,10 @@ const VIEW_ICONS: Record<string, ReactNode> = {
 
 function Brand() {
   return (
-    <Link to={paths.dashboard} className="flex items-center gap-2.5 rounded font-semibold text-fg">
-      <span
-        aria-hidden="true"
-        className="grid size-8 place-items-center rounded-lg bg-fg text-xs font-bold text-surface shadow-sm"
-      >
-        AO
-      </span>
-      <span>
-        <span className="block leading-4">AtlasOps</span>
-        <span className="block text-[10px] font-medium tracking-wide text-muted uppercase">Incident command</span>
+    <Link to={paths.dashboard} className="flex items-center gap-2.5 rounded-md text-fg">
+      <BrandMark size={28} />
+      <span className="text-[15px] font-semibold tracking-tight">
+        Atlas<span className="text-accent">Ops</span>
       </span>
     </Link>
   )
@@ -166,12 +161,13 @@ export function Sidebar() {
       <nav aria-label="Main" className="flex flex-1 flex-col gap-6 overflow-y-auto">
         <NavItems layout="sidebar" />
       </nav>
-      <ThemeSwitcher variant="row" />
-      <p className="rounded-lg border border-line bg-surface-muted p-3 text-xs leading-5 text-muted">
-        <span className="block font-semibold text-fg">Demo environment</span>
-        Data comes from a simulated API and resets when you reload.
-        {LIVE_UPDATES && ' Simulated teammates keep updating incidents.'}
-      </p>
+      <div className="flex items-center justify-between gap-2 border-t border-line px-1.5 pt-3">
+        <p className="text-xs leading-4 text-subtle">
+          Demo data
+          <span className="block">{LIVE_UPDATES ? 'Live · resets on reload' : 'Resets on reload'}</span>
+        </p>
+        <ThemeSwitcher variant="segmented" />
+      </div>
     </header>
   )
 }

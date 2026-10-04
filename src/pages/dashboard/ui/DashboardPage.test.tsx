@@ -10,7 +10,7 @@ describe('Dashboard page', () => {
     renderApp('/')
 
     expect(await screen.findByRole('heading', { name: 'Needs attention' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1, name: 'Service health' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Overview' })).toBeInTheDocument()
     expect(screen.getByText(/critical incidents are open/i)).toBeInTheDocument()
     const queues = within(screen.getByRole('list', { name: 'Queues' }))
     expect(queues.getByRole('link', { name: /^Open/ })).toHaveAttribute(

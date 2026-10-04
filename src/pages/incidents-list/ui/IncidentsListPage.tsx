@@ -13,6 +13,7 @@ import {
   InboxIcon,
   LiveMessage,
   OfflineMessage,
+  PageHeader,
   PlusIcon,
   RefreshIcon,
   SearchIcon,
@@ -61,21 +62,7 @@ export function IncidentsListPage() {
 
   return (
     <div className="page-shell">
-      <header className="page-header">
-        <div>
-          <p className="eyebrow">Incident operations</p>
-          <h1 className="page-title">Incidents</h1>
-          <p className="page-description">
-            {data
-              ? `${pluralize(data.total, 'incident')} across monitored services`
-              : 'Monitor, triage and resolve service incidents.'}
-          </p>
-        </div>
-        <Link to={paths.newIncident} className={buttonClassName({ variant: 'primary' })}>
-          <PlusIcon />
-          New incident
-        </Link>
-      </header>
+      <PageHeader title="Incidents" meta={data ? pluralize(data.total, 'incident') : undefined} />
 
       <IncidentFilters isSearching={isLoadingNewResults} />
 
