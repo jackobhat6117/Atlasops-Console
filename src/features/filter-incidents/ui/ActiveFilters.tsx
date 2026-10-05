@@ -33,7 +33,6 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   )
 }
 
-/** Visible summary of every active filter, each removable on its own, plus "Clear all". */
 export function ActiveFilters({
   params,
   onRemoveSearch,

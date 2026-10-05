@@ -9,10 +9,7 @@ const OPTIONS: Record<ThemePreference, { label: string; Icon: typeof SunIcon }> 
   system: { label: 'System', Icon: MonitorIcon },
 }
 
-/**
- * Sidebar footer: three icon buttons, one click to switch, current choice
- * marked with aria-pressed (state is visible without opening anything).
- */
+
 function ThemeSegmented() {
   const { preference, resolved, setPreference } = useTheme()
   return (
@@ -42,12 +39,7 @@ function ThemeSegmented() {
   )
 }
 
-/**
- * Theme control. `segmented` (sidebar footer): one-click buttons. `icon` (compact
- * header): a Light / Dark / System menu (Radix DropdownMenu radio group: arrow keys,
- * typeahead, Esc, focus returns to the trigger). The trigger's accessible name
- * states the current choice, and what "System" resolved to.
- */
+
 export function ThemeSwitcher({ variant = 'icon' }: { variant?: 'icon' | 'segmented' }) {
   const { preference, resolved, setPreference } = useTheme()
   if (variant === 'segmented') return <ThemeSegmented />

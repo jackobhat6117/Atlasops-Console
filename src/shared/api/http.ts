@@ -7,23 +7,17 @@ type HttpMethod = 'GET' | 'POST' | 'PATCH'
 export interface RequestOptions<T> {
   method?: HttpMethod
   body?: unknown
-  /** Every response is validated: the API is a trust boundary. */
   schema: z.ZodType<T>
-  /** Caller cancellation, e.g. TanStack Query's signal when a query becomes stale. */
   signal?: AbortSignal
   timeoutMs?: number
   headers?: Record<string, string>
 }
 
-/**
- * Thin fetch wrapper. Resolves with schema-validated data, or rejects with an
- * ApiError whose `kind` tells timeouts, cancellations and network failures apart.
- */
+
 export async function request<T>(path: string, options: RequestOptions<T>): Promise<T> {
   const { method = 'GET', body, schema, signal, timeoutMs = REQUEST_TIMEOUT_MS, headers } = options
 
-  // Writes fail immediately while offline instead of waiting for the timeout. Reads are paused
-  // by TanStack Query itself and resume on reconnect, so they never reach this point offline.
+
   if (method !== 'GET' && navigator.onLine === false) throw new ApiError('network')
 
   const timeoutSignal = AbortSignal.timeout(timeoutMs)

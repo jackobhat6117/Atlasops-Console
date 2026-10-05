@@ -6,11 +6,6 @@ export interface ErrorSummaryItem {
   onSelect: () => void
 }
 
-/**
- * Lists every problem at the top of a form, after a failed submit. Each entry
- * moves focus to its field. Re-mount it (via `key`) on every submit, so the
- * alert is announced again.
- */
 export function ErrorSummary({ title, items }: { title: string; items: ErrorSummaryItem[] }) {
   if (items.length === 0) return null
   return (

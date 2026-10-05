@@ -45,12 +45,6 @@ function ToastItem({ toast }: { toast: Toast }) {
   )
 }
 
-/**
- * Renders the toast queue as live regions. Both regions are always in the DOM,
- * so screen readers announce messages added later. Errors are announced
- * assertively, everything else politely. Plain aria-live containers are used
- * (not role="alert"), so an empty region never counts as a page alert.
- */
 export function Toaster() {
   const toasts = useToastStore((state) => state.toasts)
   const errors = toasts.filter((toast) => toast.tone === 'error')

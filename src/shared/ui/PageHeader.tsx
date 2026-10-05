@@ -2,23 +2,18 @@ import type { ReactNode, Ref } from 'react'
 
 interface PageHeaderProps {
   title: ReactNode
-  /** Short, muted context next to the title, e.g. a count or "Updated 2m ago". */
+ 
   meta?: ReactNode
-  /** Page-level actions, right-aligned. */
+
   actions?: ReactNode
-  /** Rendered above the title, e.g. <Breadcrumbs />. */
+
   breadcrumbs?: ReactNode
-  /** Rendered under the title, e.g. status badges. */
+
   children?: ReactNode
-  /** For pages that move focus to their heading on load. */
+
   headingRef?: Ref<HTMLHeadingElement>
 }
 
-/**
- * Compact, consistent page header: one row with the title, a short muted
- * detail and actions. No eyebrows or marketing copy; navigation context comes
- * from the sidebar and breadcrumbs.
- */
 export function PageHeader({ title, meta, actions, breadcrumbs, children, headingRef }: PageHeaderProps) {
   return (
     <header className="flex flex-col gap-2">

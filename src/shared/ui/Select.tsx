@@ -2,7 +2,6 @@ import { forwardRef, type SelectHTMLAttributes } from 'react'
 import { cn } from '@/shared/lib'
 import { ChevronDownIcon } from './icons'
 
-/** Styled native <select>: full keyboard, screen reader and mobile picker support for free. */
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
   function Select({ className, children, ...props }, ref) {
     return (

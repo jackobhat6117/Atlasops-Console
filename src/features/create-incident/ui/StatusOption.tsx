@@ -6,7 +6,7 @@ type StatusOptionProps = {
   status: IncidentStatus
 } & Omit<ComponentPropsWithRef<'input'>, 'type' | 'id' | 'value'>
 
-/** One segment of the initial-status segmented control (a native radio underneath). */
+
 export function StatusOption({ id, status, ...inputProps }: StatusOptionProps) {
   return (
     <label

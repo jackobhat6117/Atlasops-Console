@@ -1,6 +1,6 @@
 import { cn, formatNumber } from '@/shared/lib'
 
-/** Visible "12 / 120" counter. Over-limit is shown in text and color. */
+
 export function CharacterCount({ value, max }: { value: number; max: number }) {
   const over = value > max
   return (

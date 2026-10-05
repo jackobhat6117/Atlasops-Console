@@ -13,15 +13,6 @@ interface ConfirmDialogProps {
   tone?: 'danger' | 'primary'
 }
 
-/**
- * Modal confirmation built on Radix Dialog: focus is trapped inside, Escape and
- * Cancel close it, and focus returns to the element that was focused before it
- * opened. Cancel comes first and gets initial focus, so the safe choice is the default.
- *
- * Radix only restores focus to a <Dialog.Trigger>. This dialog is often opened
- * programmatically (e.g. by a navigation blocker), so it remembers whatever had
- * focus when it opened and restores that instead.
- */
 export function ConfirmDialog({
   open,
   onOpenChange,

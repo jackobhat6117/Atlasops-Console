@@ -17,7 +17,7 @@ describe('simulateTeammateActivity', () => {
 
     const [latest] = getIncidentActivity(updated!.id)
     expect(latest.createdAt).toBe(updated!.updatedAt)
-    // Always a teammate, never the signed-in user, so the change visibly comes from someone else.
+
     expect(USERS.map((user) => user.id)).toContain(latest.actor.id)
   })
 

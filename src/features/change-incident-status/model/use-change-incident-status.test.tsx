@@ -18,7 +18,7 @@ import { useChangeIncidentStatus } from './use-change-incident-status'
 const ID = 'INC-1042'
 const listParams = { ...DEFAULT_LIST_PARAMS, q: ID }
 
-/** Seed the cache with the incident's detail and a list containing it. */
+
 async function setup() {
   const { Wrapper, queryClient } = createWrapper()
   queryClient.setQueryData(incidentKeys.detail(ID), await fetchIncident(ID))

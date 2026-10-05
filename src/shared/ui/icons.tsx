@@ -1,8 +1,5 @@
 import type { SVGProps } from 'react'
 
-// Small inline icon set (24×24, stroke-based). Icons are decorative by default:
-// the accessible name always comes from adjacent text or an aria-label on the control.
-
 type IconProps = SVGProps<SVGSVGElement> & { size?: number }
 
 function Svg({ size = 16, children, ...props }: IconProps) {

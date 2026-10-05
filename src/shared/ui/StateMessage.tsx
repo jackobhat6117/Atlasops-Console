@@ -6,14 +6,14 @@ interface StateMessageProps {
   title: string
   description?: ReactNode
   action?: ReactNode
-  /** `alert` for failures (announced immediately), `status` for neutral states. */
+
   role?: 'alert' | 'status'
-  /** 1 when this message is the whole page (404, crash), so the page has exactly one h1. */
+
   headingLevel?: 1 | 2
   className?: string
 }
 
-/** Centered message for empty, no-results and error states. */
+
 export function StateMessage({
   icon,
   title,

@@ -19,10 +19,7 @@ function Updated({ incident }: { incident: Incident }) {
   )
 }
 
-/**
- * Tablet and desktop: one column per fact. Columns appear as the table's own width allows
- * (container queries), so the sidebar and the two-column dashboard grid are accounted for.
- */
+
 function AttentionTable({ items }: { items: Incident[] }) {
   return (
     <div className="@container overflow-x-auto">

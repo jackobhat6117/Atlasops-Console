@@ -1,4 +1,4 @@
-/** Initial-load placeholder that mirrors the list layout to avoid layout shift. */
+
 export function IncidentListSkeleton({ rows = 10 }: { rows?: number }) {
   return (
     <div role="status" className="divide-y divide-line">

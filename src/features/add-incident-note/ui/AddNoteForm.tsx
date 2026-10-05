@@ -5,11 +5,7 @@ import { NOTE_MAX, addNoteInputSchema, type AddNoteInput } from '@/entities/inci
 import { Button, CharacterCount, Field, fieldAria, inputClassName } from '@/shared/ui'
 import { useAddIncidentNote } from '../model/use-add-incident-note'
 
-/**
- * Plain-text note composer. Empty and whitespace-only notes are rejected on
- * the client (and again by the server). The text is cleared only after the
- * server confirms, so a failed submission never loses what the user typed.
- */
+
 export function AddNoteForm({ incidentId }: { incidentId: string }) {
   const id = useId()
   const mutation = useAddIncidentNote(incidentId)

@@ -16,11 +16,11 @@ import { SortSelect } from './SortSelect'
 const statusOptions = INCIDENT_STATUSES.map((value) => ({ value, label: STATUS_LABELS[value] }))
 const severityOptions = INCIDENT_SEVERITIES.map((value) => ({ value, label: SEVERITY_LABELS[value] }))
 
-/** Toolbar for the incident list: search, filters, sort and active filter chips, all synced to the URL. */
+
 export function IncidentFilters({ isSearching = false }: { isSearching?: boolean }) {
   const list = useIncidentListParams()
   const services = useServices()
-  // Keep filters from the URL selectable even before (or if) the service list fails to load.
+
   const serviceOptions = Array.from(new Set([...(services.data ?? []), ...list.params.service]))
     .sort()
     .map((value) => ({ value, label: value }))

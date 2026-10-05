@@ -1,9 +1,5 @@
 import { create } from 'zustand'
 
-// Shared client state for transient feedback (mutation success/failure).
-// Zustand is used because toasts are raised from mutation callbacks outside
-// any component, and read by one live region at the app root. This store must
-// never hold server data (TanStack Query) or list filters (the URL).
 
 export type ToastTone = 'success' | 'error' | 'info'
 

@@ -3,7 +3,6 @@ import { useThemeStore, type ResolvedTheme } from './theme-store'
 
 export const PREFERS_DARK_QUERY = '(prefers-color-scheme: dark)'
 
-/** The user's preference plus the theme actually in effect ("system" follows the OS, live). */
 export function useTheme() {
   const preference = useThemeStore((state) => state.preference)
   const setPreference = useThemeStore((state) => state.setPreference)

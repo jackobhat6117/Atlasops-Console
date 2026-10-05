@@ -1,10 +1,6 @@
 import { cn } from '@/shared/lib'
 
-/**
- * AtlasOps mark: an "A" peak (Atlas) whose crossbar is a heartbeat line
- * (operations monitoring). Decorative: the adjacent wordmark carries the name.
- * Kept in sync with public/favicon.svg.
- */
+
 export function BrandMark({ size = 32, className }: { size?: number; className?: string }) {
   return (
     <svg

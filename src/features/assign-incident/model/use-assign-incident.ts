@@ -4,12 +4,7 @@ import { assignIncident, incidentKeys } from '@/entities/incident'
 import { getErrorMessage } from '@/shared/api'
 import { notify } from '@/shared/model'
 
-/**
- * Pessimistic on purpose: the UI shows progress and applies the server's
- * response, which is the full updated incident. Status changes cover the
- * optimistic requirement; assignment is less frequent and depends on
- * server-side user validation.
- */
+
 export function useAssignIncident(incidentId: string) {
   const queryClient = useQueryClient()
 

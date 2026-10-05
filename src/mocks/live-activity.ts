@@ -3,10 +3,7 @@ import { getAllIncidents, nextNoteId, recordActivity, touch } from './db'
 import { NOTE_MESSAGES, USERS } from './seed'
 import { excerpt } from './seed-activity'
 
-// Simulated teammates. A real incident console is edited by many people at once, and the
-// mock has no other users, so this makes changes arrive "from outside" for the demo.
-// It goes through the same db helpers as the handlers, so versions, timestamps and the
-// audit log behave exactly as they would for a real write. Browser only: tests never run it.
+
 
 const NEXT_STATUS: Record<IncidentStatus, IncidentStatus | null> = {
   triggered: 'acknowledged',
@@ -19,11 +16,6 @@ function pick<T>(items: readonly T[], random: () => number): T {
   return items[Math.floor(random() * items.length)]
 }
 
-/**
- * Applies one change by a random teammate to a random open incident:
- * assign it (when unowned), move it to the next status, or add a note.
- * Returns the updated incident, or null when nothing is open.
- */
 export function simulateTeammateActivity(random: () => number = Math.random): Incident | null {
   const open = getAllIncidents().filter((incident) => incident.status !== 'resolved')
   if (open.length === 0) return null

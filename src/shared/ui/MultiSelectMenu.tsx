@@ -16,12 +16,7 @@ interface MultiSelectMenuProps<T extends string> {
   disabled?: boolean
 }
 
-/**
- * Filter dropdown with checkbox items, built on Radix DropdownMenu
- * (menuitemcheckbox semantics, arrow-key navigation, typeahead, Esc closes and
- * focus returns to the trigger). The menu stays open while the user toggles
- * several values.
- */
+
 export function MultiSelectMenu<T extends string>({
   label,
   options,

@@ -13,11 +13,7 @@ const FILTERS: Array<{ value: string; label: string; types: IncidentActivityType
 
 const INITIAL_VISIBLE = 8
 
-/**
- * Server-recorded audit history for one incident: who changed what, and when.
- * It refetches after every mutation on the incident, so new entries appear as
- * soon as the server confirms. The filter and expand state are local UI state.
- */
+
 export function IncidentActivity({ incidentId }: { incidentId: string }) {
   const query = useIncidentActivity(incidentId)
   const [filterValue, setFilterValue] = useState('all')

@@ -9,7 +9,7 @@ interface IncidentPreviewProps {
   assigneeName: string | null
 }
 
-/** Live summary of the incident being created, as responders will see it. */
+
 export function IncidentPreview({ title, severity, status, service, assigneeName }: IncidentPreviewProps) {
   const trimmed = title.trim()
   return (

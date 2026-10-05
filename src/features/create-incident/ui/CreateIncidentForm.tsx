@@ -50,17 +50,7 @@ const FIELD_LABELS: Record<CreateIncidentField, string> = {
   assigneeId: 'Assignee',
 }
 
-/**
- * Create-incident form: three short sections (what's happening, impact,
- * response) next to a sticky live preview holding the primary action.
- *
- * - Validates on submit, then on change, with the shared Zod schema.
- * - Errors appear next to each field and in a summary; focus moves to the first invalid field.
- * - Server field errors (400) map onto the same fields. Other failures show an alert.
- *   Entered data is always kept.
- * - Double submission is blocked while a request is in flight. Ctrl/⌘+Enter submits.
- * - Leaving with unsaved input asks for confirmation.
- */
+
 export function CreateIncidentForm({ onCreated }: { onCreated: (incident: Incident) => void }) {
   const formId = useId()
   const ids = Object.fromEntries(CREATE_INCIDENT_FIELDS.map((name) => [name, `${formId}-${name}`])) as Record<

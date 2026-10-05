@@ -10,7 +10,7 @@ const WINDOW_DAYS = 30
 const dayFormat = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })
 const formatDay = (date: string) => dayFormat.format(new Date(`${date}T00:00:00Z`))
 
-/** "2h 14m" with "p90 7h" underneath. Missing values read as "no data", not a dash. */
+
 function DurationCell({ stats, emphasis = false }: { stats: DurationStats; emphasis?: boolean }) {
   if (stats.medianMs === null) {
     return (

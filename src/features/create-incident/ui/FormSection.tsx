@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from 'react'
 
-/** Numbered form section card: breaks a long form into short, scannable steps. */
+
 export function FormSection({
   step,
   title,

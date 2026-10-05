@@ -1,5 +1,3 @@
-// Formatters are created once at module load: Intl constructors are expensive,
-// and list rows call these on every render.
 
 const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
   dateStyle: 'medium',

@@ -2,7 +2,7 @@ import { NoteList, type Incident } from '@/entities/incident'
 import { AddNoteForm } from '@/features/add-incident-note'
 import { formatNumber } from '@/shared/lib'
 
-/** Investigation timeline plus the composer that appends to it. */
+
 export function IncidentNotes({ incident }: { incident: Incident }) {
   return (
     <section aria-labelledby="incident-notes-heading" className="rounded-xl border border-line bg-surface shadow-panel">

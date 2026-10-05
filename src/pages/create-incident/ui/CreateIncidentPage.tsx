@@ -27,7 +27,7 @@ export function CreateIncidentPage() {
             </>
           }
         />
-        {/* Replace the history entry, so Back from the new incident doesn't return to a submitted form. */}
+       
         <CreateIncidentForm onCreated={(incident) => navigate(paths.incident(incident.id), { replace: true })} />
       </div>
     </div>

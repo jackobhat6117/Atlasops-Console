@@ -13,17 +13,7 @@ type FilterKey = 'status' | 'severity' | 'service'
 type FilterValue<K extends FilterKey> = IncidentListParams[K][number]
 type Changes = Partial<IncidentListParams> | ((current: IncidentListParams) => Partial<IncidentListParams>)
 
-/**
- * The URL is the single source of truth for list state: search, filters,
- * sort and page. Reload, share, back/forward and returning from a detail
- * page all restore the exact list.
- *
- * Any change other than the page resets to page 1, so the user never lands
- * on an empty page past the end of a smaller result set.
- *
- * Note: React Router's functional setSearchParams sees the URL of the current
- * render, so call one action per event. Separate clicks are always safe.
- */
+
 export function useIncidentListParams() {
   const [searchParams, setSearchParams] = useSearchParams()
   const params = useMemo(() => parseIncidentListParams(searchParams), [searchParams])
@@ -44,7 +34,7 @@ export function useIncidentListParams() {
 
   const actions = useMemo(
     () => ({
-      // Typing replaces the history entry so Back doesn't step through keystrokes.
+    
       setSearch: (q: string) => update({ q }, { replace: true }),
 
       toggleFilter: <K extends FilterKey>(key: K, value: FilterValue<K>) =>
@@ -57,7 +47,7 @@ export function useIncidentListParams() {
       setFilter: <K extends FilterKey>(key: K, values: FilterValue<K>[]) =>
         update({ [key]: values } as Partial<IncidentListParams>),
 
-      /** Remove one value from a filter, or the whole filter when no value is given. */
+   
       clearFilter: (key: FilterKey, value?: string) =>
         update((current) => {
           const values = current[key] as string[]
@@ -81,7 +71,7 @@ export function useIncidentListParams() {
 
   return {
     params,
-    /** Canonical list query string, e.g. to link back from a detail page. */
+  
     search: serializeIncidentListParams(params).toString(),
     hasActiveFilters: hasActiveFilters(params),
     ...actions,

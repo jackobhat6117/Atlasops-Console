@@ -67,10 +67,10 @@ describe('computeResponseMetrics', () => {
     const createdMs = Date.parse(a.createdAt)
     const activity = [
       created(a),
-      changed(a, createdMs + 5 * MIN, 'triggered', 'investigating'), // skipped "acknowledged": still the first response
+      changed(a, createdMs + 5 * MIN, 'triggered', 'investigating'), 
       changed(a, createdMs + 120 * MIN, 'investigating', 'resolved'),
-      changed(a, createdMs + 180 * MIN, 'resolved', 'investigating'), // reopened
-      changed(a, createdMs + 300 * MIN, 'investigating', 'resolved'), // a later resolution doesn't reset the clock
+      changed(a, createdMs + 180 * MIN, 'resolved', 'investigating'), 
+      changed(a, createdMs + 300 * MIN, 'investigating', 'resolved'), 
     ]
     const m = computeResponseMetrics([a], activity, { now: NOW })
     const critical = m.bySeverity.find((row) => row.severity === 'critical')!

@@ -2,11 +2,7 @@ import type { ReactNode } from 'react'
 import { cn } from '@/shared/lib'
 import { AlertOctagonIcon } from './icons'
 
-/**
- * Accessible form field layout: label, optional hint, control and error.
- * The caller wires ids: the control gets `id`, plus `aria-describedby` set to
- * hintId and errorId, and `aria-invalid`. Use `fieldIds(name)` to keep them consistent.
- */
+
 export function Field({
   id,
   label,
@@ -24,7 +20,6 @@ export function Field({
   error?: string
   required?: boolean
   optional?: boolean
-  /** Right-aligned extra, e.g. a character counter. */
   aside?: ReactNode
   children: ReactNode
   className?: string

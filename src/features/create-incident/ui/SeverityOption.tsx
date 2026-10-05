@@ -39,11 +39,7 @@ type SeverityOptionProps = {
   invalid?: boolean
 } & Omit<ComponentPropsWithRef<'input'>, 'type' | 'id' | 'value'>
 
-/**
- * Severity radio rendered as a selectable card. The native radio stays in the
- * DOM (visually hidden) for keyboard (arrow keys) and screen reader support.
- * Selection is shown by border, ring and a check mark, not color alone.
- */
+
 export function SeverityOption({ id, severity, invalid = false, className, ...inputProps }: SeverityOptionProps) {
   const { hint, stripe, icon, Icon } = OPTIONS[severity]
   return (

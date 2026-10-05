@@ -1,12 +1,11 @@
-// Runtime behavior of the mock API. Tests override this with
-// `configureMock({ minDelayMs: 0, maxDelayMs: 0, failureRate: 0 })`.
+
 
 export interface MockConfig {
   minDelayMs: number
   maxDelayMs: number
-  /** Probability (0–1) that any request fails with a 500. */
+
   failureRate: number
-  /** Honor the X-Mock-* request headers. Development-only by default. */
+
   devControls: boolean
 }
 

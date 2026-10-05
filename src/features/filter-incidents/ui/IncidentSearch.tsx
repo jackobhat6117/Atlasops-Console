@@ -10,11 +10,7 @@ interface IncidentSearchProps {
   isSearching?: boolean
 }
 
-/**
- * Search input with local state for instant typing feedback. It commits to the
- * URL after a 300ms pause, so a request is not sent on every keystroke. Enter
- * commits immediately, and Escape clears.
- */
+
 export function IncidentSearch({ value, onSearch, isSearching = false }: IncidentSearchProps) {
   const inputId = useId()
   const [draft, setDraft] = useState(value)

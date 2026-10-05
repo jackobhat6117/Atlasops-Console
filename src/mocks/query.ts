@@ -5,9 +5,7 @@ import {
   type SortField,
 } from '@/entities/incident'
 
-// Pure search/filter/sort/paginate logic behind GET /api/incidents.
-// Query values are sanitized by the same parser the UI uses (parseIncidentListParams):
-// unknown or malformed values are ignored instead of rejected.
+
 
 function matchesSearch(incident: Incident, q: string) {
   if (!q) return true

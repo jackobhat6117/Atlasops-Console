@@ -10,7 +10,7 @@ import { renderApp } from '@/test/render-app'
 async function openForm() {
   const app = renderApp('/incidents/new')
   await screen.findByRole('heading', { level: 1, name: 'New incident' })
-  // Wait for reference data so the selects are enabled.
+
   await waitFor(() => expect(screen.getByLabelText(/^Service/)).toBeEnabled())
   await waitFor(() => expect(screen.getByLabelText(/^Assignee/)).toBeEnabled())
   return app

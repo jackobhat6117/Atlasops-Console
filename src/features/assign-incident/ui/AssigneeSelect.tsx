@@ -4,12 +4,7 @@ import { useUsers, type UserSummary } from '@/entities/user'
 import { Select, Spinner } from '@/shared/ui'
 import { useAssignIncident } from '../model/use-assign-incident'
 
-/**
- * Assign, reassign or unassign. While a change is saving, the select shows
- * the requested value and stays focusable. Picking again queues behind the
- * in-flight request (mutations for one incident share a scope), so changes
- * apply in order. On failure the select falls back to the server value.
- */
+
 export function AssigneeSelect({ incident }: { incident: Incident }) {
   const id = useId()
   const users = useUsers()
@@ -18,7 +13,7 @@ export function AssigneeSelect({ incident }: { incident: Incident }) {
   const current = incident.assignee?.id ?? ''
   const value = mutation.isPending ? (mutation.variables ?? '') : current
 
-  // Keep the current assignee selectable even if the user list hasn't loaded or failed.
+
   const options: UserSummary[] = [...(users.data ?? [])]
   if (incident.assignee && !options.some((user) => user.id === incident.assignee?.id)) {
     options.unshift(incident.assignee)

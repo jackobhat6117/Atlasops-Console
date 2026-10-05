@@ -6,11 +6,6 @@ import {
   type CreateIncidentInput,
 } from '@/entities/incident'
 
-/**
- * Form-level schema: the API schema with field messages tailored to the form.
- * The assignee is a string in the form ("" means unassigned) and becomes null
- * in the API payload.
- */
 export const createIncidentFormSchema = createIncidentInputSchema.extend({
   severity: z.enum(INCIDENT_SEVERITIES, { error: 'Select a severity.' }),
   status: z.enum(INCIDENT_STATUSES, { error: 'Select an initial status.' }),

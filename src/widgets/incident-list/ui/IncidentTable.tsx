@@ -129,11 +129,10 @@ export function IncidentTable({
   isStale,
 }: IncidentListViewProps) {
   const navigate = useNavigate()
-  // Stable object so memoized rows don't re-render when unrelated state changes.
+
   const linkState = useMemo<IncidentListReturnState>(() => ({ listSearch }), [listSearch])
 
-  // Mouse convenience: clicking anywhere on a row opens it. Keyboard and
-  // assistive tech use the real link in the title cell.
+
   const onRowClick = useCallback(
     (event: MouseEvent<HTMLTableRowElement>, incident: Incident) => {
       if ((event.target as HTMLElement).closest('a, button')) return

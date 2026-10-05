@@ -4,7 +4,6 @@ export type ApiErrorKind = 'http' | 'network' | 'timeout' | 'aborted' | 'invalid
 
 type FieldErrors = Record<string, string[]>
 
-/** Every failure from `request()` is normalized into this one type. */
 export class ApiError extends Error {
   readonly kind: ApiErrorKind
   readonly status: number | undefined
@@ -25,7 +24,6 @@ export class ApiError extends Error {
     this.currentVersion = details.currentVersion
   }
 
-  /** Transient failures worth retrying automatically. Client errors (4xx) are not. */
   get isRetryable() {
     return (
       this.kind === 'network' ||
@@ -47,20 +45,13 @@ export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError
 }
 
-/**
- * Error bodies are untrusted input: parse only the fields we use, and ignore
- * anything malformed rather than failing a second time.
- */
 export const errorBodySchema = z.object({
   code: z.string().max(100).optional(),
   fieldErrors: z.record(z.string(), z.array(z.string().max(500))).optional(),
   currentVersion: z.number().int().optional(),
 })
 
-/**
- * User-facing message for any error. Messages are written by us, never copied
- * from the server, so no internal details or stack traces can leak into the UI.
- */
+
 export function getErrorMessage(error: unknown): string {
   if (!isApiError(error)) return 'Something went wrong. Please try again.'
 

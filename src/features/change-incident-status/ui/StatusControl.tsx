@@ -9,12 +9,7 @@ import {
 import { Button, Spinner } from '@/shared/ui'
 import { useChangeIncidentStatus } from '../model/use-change-incident-status'
 
-/**
- * Current status plus the transitions allowed from it. The change is applied
- * optimistically. While it is in flight, the actions are disabled (no
- * duplicate requests) and focus moves to the status, because the clicked
- * button is replaced by the new status's actions.
- */
+
 export function StatusControl({ incident }: { incident: Incident }) {
   const mutation = useChangeIncidentStatus(incident.id)
   const statusRef = useRef<HTMLDivElement>(null)

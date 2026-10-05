@@ -11,7 +11,7 @@ async function findTable() {
   return screen.findByRole('table', { name: /incidents, sorted by/i })
 }
 
-/** Data rows only (excludes the header row). */
+
 function getDataRows(table: HTMLElement) {
   return within(table).getAllByRole('row').slice(1)
 }

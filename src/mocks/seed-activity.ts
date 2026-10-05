@@ -7,10 +7,7 @@ import {
 } from '@/entities/incident'
 import { createRandom, SEED, USERS } from './seed'
 
-// Plausible, deterministic history for each seeded incident, derived from its
-// current state: created as "triggered", walked through the lifecycle to its
-// current status, assigned, plus one entry per seeded note. Each incident uses
-// its own random stream, so this never changes the seeded incidents themselves.
+
 
 const STATUS_PATH: Record<IncidentStatus, IncidentStatus[]> = {
   triggered: [],
@@ -21,11 +18,6 @@ const STATUS_PATH: Record<IncidentStatus, IncidentStatus[]> = {
 
 const MINUTE_MS = 60_000
 
-/**
- * How quickly someone first responds (moves the incident out of Triggered), in minutes.
- * More severe incidents are picked up faster, as an on-call rotation would, so the
- * dashboard's response-time metrics look like a real team's.
- */
 const FIRST_RESPONSE_MINUTES: Record<IncidentSeverity, [min: number, max: number]> = {
   critical: [2, 10],
   high: [5, 25],

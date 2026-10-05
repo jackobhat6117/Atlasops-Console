@@ -2,12 +2,9 @@ import type { Incident, IncidentActivity } from '@/entities/incident'
 import { FIRST_INCIDENT_NUMBER, formatIncidentId, generateIncidents } from './seed'
 import { generateIncidentActivity } from './seed-activity'
 
-// In-memory "database" for the mock API. It lives in the service worker's page
-// context (browser) or the test process (Vitest), and resets on reload.
 
 interface Db {
   incidents: Map<string, Incident>
-  /** Audit history per incident, oldest first. */
   activity: Map<string, IncidentActivity[]>
   nextIncidentNumber: number
   nextNoteNumber: number
@@ -68,21 +65,21 @@ export function nextNoteId() {
   return `note-${db.nextNoteNumber++}`
 }
 
-/** Newest first. */
+
 export function getIncidentActivity(incidentId: string): IncidentActivity[] {
   return [...(db.activity.get(incidentId) ?? [])].reverse()
 }
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never
 
-/** Append an audit entry; the id is assigned here, like a database would. */
+
 export function recordActivity(entry: DistributiveOmit<IncidentActivity, 'id'>) {
   const saved = { ...entry, id: `act-${db.nextActivityNumber++}` } as IncidentActivity
   db.activity.set(entry.incidentId, [...(db.activity.get(entry.incidentId) ?? []), saved])
   return saved
 }
 
-/** Every audit entry across all incidents, oldest first within each incident. */
+
 export function getAllActivity(): IncidentActivity[] {
   return Array.from(db.activity.values()).flat()
 }

@@ -47,8 +47,7 @@ export function IncidentsListPage() {
     resultsRef.current?.scrollIntoView({ block: 'start' })
   }
 
-  // Changes made by others show up as a notice, never as rows moving under the user's cursor.
-  // The count compares against the moment the visible data was loaded.
+ 
   const changedCount = useIncidentChanges(
     list.params,
     data && !query.isPlaceholderData ? query.dataUpdatedAt : null,
@@ -57,7 +56,7 @@ export function IncidentsListPage() {
   const isRefreshing = query.isFetching && !query.isPending
   const isLoadingNewResults = query.isFetching && query.isPlaceholderData
 
-  // Announced to screen readers once results settle (not on every keystroke).
+ 
   const announcement = data && !query.isFetching ? `${pluralize(data.total, 'incident')} found.` : ''
 
   return (

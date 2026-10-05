@@ -1,6 +1,5 @@
 import { cn } from '@/shared/lib'
 
-/** Decorative spinner. Pair it with visible or screen-reader text describing what is loading. */
 export function Spinner({ size = 16, className }: { size?: number; className?: string }) {
   return (
     <svg

@@ -5,22 +5,13 @@ import {
   type IncidentSeverity,
 } from '@/entities/incident'
 
-// Response-time metrics derived from the audit log, as a real backend would compute
-// them from an event store. Definitions (also documented in docs/API.md):
-// - Time to acknowledge: created → first transition out of "triggered" (a human responded).
-// - Time to resolve: created → first transition to "resolved" (reopens don't reset it).
-// - Population: incidents created within the window that started as "triggered".
-//   Incidents not yet acknowledged or resolved are counted, but have no duration yet.
-// - Median and p90 (nearest-rank) rather than only the mean, so one stuck incident
-//   doesn't distort the picture.
-
 const DAY_MS = 24 * 60 * 60 * 1000
 export const DEFAULT_WINDOW_DAYS = 30
 export const MAX_WINDOW_DAYS = 90
 export const TREND_DAYS = 14
 
 export interface DurationStats {
-  /** Incidents with a measured duration. */
+
   count: number
   medianMs: number | null
   p90Ms: number | null

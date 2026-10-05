@@ -4,13 +4,11 @@ import { ChevronRightIcon } from './icons'
 export interface BreadcrumbItem {
   label: string
   to?: string
-  /** Router state for the link, e.g. to restore a list's filters. */
   state?: unknown
-  /** Render in monospace, for identifiers such as INC-1042. */
   mono?: boolean
 }
 
-/** Breadcrumb trail. The last item is the current page (aria-current, not a link). */
+
 export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   return (
     <nav aria-label="Breadcrumb">

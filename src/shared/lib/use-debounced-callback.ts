@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-/**
- * Debounces `callback`. `run` schedules a call, `flush` runs a pending call
- * immediately, and `cancel` drops it. The latest callback is always used, and
- * a pending call is cancelled on unmount. The returned object is stable.
- */
+
 export function useDebouncedCallback<Args extends unknown[]>(
   callback: (...args: Args) => void,
   delayMs: number,
